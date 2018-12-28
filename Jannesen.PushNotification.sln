@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jannesen.PushNotification", "Jannesen.PushNotification.csproj", "{8C4FD0A8-F478-4448-8E04-CAB5EAB431BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jannesen.FileFormat.Json", "..\Jannesen.FileFormat.Json\Jannesen.FileFormat.Json.csproj", "{6C233F19-71D7-4A8A-97F6-C73790F37F8D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8C4FD0A8-F478-4448-8E04-CAB5EAB431BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C4FD0A8-F478-4448-8E04-CAB5EAB431BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C4FD0A8-F478-4448-8E04-CAB5EAB431BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C4FD0A8-F478-4448-8E04-CAB5EAB431BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C233F19-71D7-4A8A-97F6-C73790F37F8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C233F19-71D7-4A8A-97F6-C73790F37F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C233F19-71D7-4A8A-97F6-C73790F37F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C233F19-71D7-4A8A-97F6-C73790F37F8D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E988351F-6B04-4514-ADD2-FCD3F7830C0C}
+	EndGlobalSection
+EndGlobal
