@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Xml;
 
@@ -22,8 +22,7 @@ namespace Jannesen.PushNotification.Internal
             if (string.IsNullOrEmpty(s))
                 return defaultValue;
 
-            switch(s.ToLower())
-            {
+            switch(s.ToLower()) {
             case "0":
             case "false":
                 return false;
