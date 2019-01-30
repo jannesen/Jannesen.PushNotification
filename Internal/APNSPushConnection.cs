@@ -65,8 +65,7 @@ namespace Jannesen.PushNotification.Internal
                 throw new PushNotificationConnectionException("connect(" + hostname + "): failed.", err);
             }
 
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 _isAvailable   = _connection.Connected;
                 _notifications = new List<Notification>(Config.RecyleCount);
 
@@ -167,8 +166,7 @@ namespace Jannesen.PushNotification.Internal
 
                 var queued = false;
 
-                lock(_lockObject)
-                {
+                lock(_lockObject) {
                     if (_notifications != null) {
                         _notifications.Insert(_notificationIdentifier++, notification);
                         queued = true;
@@ -198,8 +196,7 @@ namespace Jannesen.PushNotification.Internal
         {
             _isAvailable = false;
 
-            lock (_lockObject)
-            {
+            lock (_lockObject) {
                 if (_receiveTask == null) {
                     _close();
                     return;
@@ -220,8 +217,7 @@ namespace Jannesen.PushNotification.Internal
             catch(TaskCanceledException) {
             }
 
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 if (_connection == null)
                     return;
             }
@@ -234,8 +230,7 @@ namespace Jannesen.PushNotification.Internal
 
         private                     void                        _close()
         {
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 _isAvailable = false;
 
                 if (_connection != null) {
@@ -257,8 +252,7 @@ namespace Jannesen.PushNotification.Internal
             try {
                 msg = await _connection.Receive(6, true);
 
-                lock(_lockObject)
-                {
+                lock(_lockObject) {
                     notifications = _notifications;
                     _notifications = null;
                 }
@@ -268,8 +262,7 @@ namespace Jannesen.PushNotification.Internal
             catch(Exception err) {
                 bool    connected;
 
-                lock(_lockObject)
-                {
+                lock(_lockObject) {
                     notifications = _notifications;
                     _notifications = null;
                     connected = _connection != null;

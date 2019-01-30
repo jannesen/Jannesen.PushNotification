@@ -37,8 +37,7 @@ namespace Jannesen.PushNotification
         {
             ServiceConnection   connection;
 
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 connection = _connection;
                 _shutdown   = false;
                 _connection = null;
@@ -52,8 +51,7 @@ namespace Jannesen.PushNotification
 
         public                  void                        SendNotification(Notification notification)
         {
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 if (!_shutdown) {
                     _queue.Add(notification);
                     _startWorker();
@@ -64,8 +62,7 @@ namespace Jannesen.PushNotification
         {
             List<Notification>      dropped = null;
 
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 _shutdown = true;
                 dropped = _dropQueue();
             }
@@ -122,8 +119,7 @@ namespace Jannesen.PushNotification
         }
         private                 object                      _getNextMessage()
         {
-            lock (_lockObject)
-            {
+            lock (_lockObject) {
                 while (_queueSendPos < _queue.Count) {
                     if (_queueSendPos > 128) {
                         _queue.RemoveRange(0, 128);
@@ -181,8 +177,7 @@ namespace Jannesen.PushNotification
         {
             ServiceConnection       connection;
 
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 connection = _connection;
                 _connection = null;
             }
@@ -221,8 +216,7 @@ namespace Jannesen.PushNotification
         }
         internal                void                        ConnectionClosed(ServiceConnection connection, List<Notification> requeueNotifications = null)
         {
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 if (_connection == connection)
                     _connection = null;
 
@@ -239,8 +233,7 @@ namespace Jannesen.PushNotification
         }
         internal                void                        RecyleConnection(ServiceConnection connection)
         {
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
                 if (_connection == connection && !_shutdown) {
                     _queue.Insert(_queueSendPos, new Internal.ShutdownMessage(connection));
                     _startWorker();

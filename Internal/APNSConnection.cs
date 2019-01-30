@@ -34,8 +34,7 @@ namespace Jannesen.PushNotification.Internal
         }
         public                      void                        Dispose()
         {
-            lock(_lockObject)
-            {
+            lock(_lockObject) {
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine(_name + ": Dispose");
 #endif
@@ -60,8 +59,7 @@ namespace Jannesen.PushNotification.Internal
             try {
                 using (new Timer((object state) =>
                                     {
-                                        lock(_lockObject)
-                                        {
+                                        lock(_lockObject) {
                                             if (_tcpClient != null) {
                                                 timeoutError = new TimeoutException("Timeout");
                                                 Dispose();
@@ -75,8 +73,7 @@ namespace Jannesen.PushNotification.Internal
 #endif
                     await _tcpClient.ConnectAsync(hostname, port);
 
-                    lock(_lockObject)
-                    {
+                    lock(_lockObject) {
                         _sslStream = new SslStream(_tcpClient.GetStream(),
                                                    false,
                                                    (sender, certificate, chain, policyErrors)                                    => (policyErrors == SslPolicyErrors.None),

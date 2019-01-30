@@ -96,7 +96,7 @@ namespace Jannesen.PushNotification.Internal
                     }
                 }
 
-                JsonObject jsonResponse = (JsonObject)JsonReader.Parse(response);
+                JsonObject jsonResponse = (JsonObject)JsonReader.ParseString(response);
 
                 if (jsonResponse.GetValueInt("failure") != 0 || jsonResponse.GetValueInt("canonical_ids") != 0) {
                     var results = jsonResponse["results"];
