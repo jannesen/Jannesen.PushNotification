@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Jannesen.PushNotification.snk" />
-    <None Include="LICENSE" />
+    <None Include="LICENSE.txt" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
