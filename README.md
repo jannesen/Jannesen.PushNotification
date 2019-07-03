@@ -7,3 +7,5 @@ Because the Apple Push Notification is unreliable by design. This library only i
 It usage the legacy APN interface and Firebase HTTPS POST to send notifications.
 
 Not existing devices are reported back.
+
+The library is fully async.
