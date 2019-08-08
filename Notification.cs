@@ -4,6 +4,7 @@ using Jannesen.FileFormat.Json;
 
 namespace Jannesen.PushNotification
 {
+    [Serializable]
     public class Notification
     {
         public      readonly    string          DeviceAddress;

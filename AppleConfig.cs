@@ -67,6 +67,8 @@ namespace Jannesen.PushNotification
         }
         public                                                          AppleConfig(XmlElement config)
         {
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
             try {
                 Development      = config.GetAttributeBool("development", false);
                 ClientCertificate = _loadCertificate(config.GetAttributeString("certificate"));
@@ -101,8 +103,7 @@ namespace Jannesen.PushNotification
         {
             Task<List<AppleFeedback>>   readTask;
 
-            using (var connection = new Internal.APNSConnection())
-            {
+            using (var connection = new Internal.APNSConnection()) {
                 await connection.Connect(Development ? "feedback.sandbox.push.apple.com" : "feedback.push.apple.com", 2196, ClientCertificate, 30 * 1000);
 
                 readTask = _feedbackReadResponse(connection);
@@ -125,8 +126,7 @@ namespace Jannesen.PushNotification
         {
             X509Certificate2 foundCert = null;
 
-            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
-            {
+            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine)) {
                 try {
                     store.Open(OpenFlags.ReadOnly);
                 }

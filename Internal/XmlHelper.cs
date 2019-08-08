@@ -22,7 +22,7 @@ namespace Jannesen.PushNotification.Internal
             if (string.IsNullOrEmpty(s))
                 return defaultValue;
 
-            switch(s.ToLower()) {
+            switch(s.ToLowerInvariant()) {
             case "0":
             case "false":
                 return false;
@@ -38,9 +38,8 @@ namespace Jannesen.PushNotification.Internal
         public  static      int         GetAttributeInt(this XmlElement elm, string attrName, int minValue, int maxValue)
         {
             string  s = elm.GetAttributeString(attrName);
-            int     rtn;
 
-            if (!int.TryParse(s, out rtn))
+            if (!int.TryParse(s, out var rtn))
                 throw new ConfigurationErrorsException("Invalid int value '" + s + "' in attribute '" + attrName + "'.", elm);
 
             if (minValue > rtn || rtn > maxValue)
@@ -51,12 +50,11 @@ namespace Jannesen.PushNotification.Internal
         public  static      int         GetAttributeInt(this XmlElement elm, string attrName, int minValue, int maxValue, int defaultValue)
         {
             string  s = elm.GetAttribute(attrName);
-            int     rtn;
 
             if (string.IsNullOrEmpty(s))
                 return defaultValue;
 
-            if (!int.TryParse(s, out rtn))
+            if (!int.TryParse(s, out var rtn))
                 throw new ConfigurationErrorsException("Invalid int value '" + s + "' in attribute '" + attrName + "'.", elm);
 
             if (minValue > rtn || rtn > maxValue)

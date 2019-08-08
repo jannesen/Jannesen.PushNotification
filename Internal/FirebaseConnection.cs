@@ -38,10 +38,8 @@ namespace Jannesen.PushNotification.Internal
                 if (timeToLive < 60)
                     throw new Exception("Notification expired.");
 
-                using (StringWriter stringWriter = new StringWriter())
-                {
-                    using (JsonWriter jsonWriter = new JsonWriter(stringWriter))
-                    {
+                using (StringWriter stringWriter = new StringWriter()) {
+                    using (JsonWriter jsonWriter = new JsonWriter(stringWriter)) {
                         jsonWriter.WriteStartObject();
                             jsonWriter.WriteNameValue("to", notification.DeviceAddress);
 
@@ -74,22 +72,18 @@ namespace Jannesen.PushNotification.Internal
 
                 string response;
 
-                using (Stream dataStream = await webreq.GetRequestStreamAsync())
-                {
+                using (Stream dataStream = await webreq.GetRequestStreamAsync()) {
                     dataStream.Write(body, 0, body.Length);
 
-                    using (HttpWebResponse webresp = (HttpWebResponse)await webreq.GetResponseAsync())
-                    {
+                    using (HttpWebResponse webresp = (HttpWebResponse)await webreq.GetResponseAsync()) {
                         if (webresp.StatusCode != HttpStatusCode.OK)
                             throw new Exception("FCM server returns: " + webresp.StatusCode);
 
-                        if (!webresp.ContentType.StartsWith("application/json;"))
+                        if (!webresp.ContentType.StartsWith("application/json;", StringComparison.Ordinal))
                             throw new Exception("FCM server returns invalid contenttype: " + webresp.ContentType);
 
-                        using (Stream responseReader = webresp.GetResponseStream())
-                        {
-                            using (StreamReader reader = new StreamReader(responseReader, System.Text.Encoding.GetEncoding(webresp.CharacterSet)))
-                            {
+                        using (Stream responseReader = webresp.GetResponseStream()) {
+                            using (StreamReader reader = new StreamReader(responseReader, System.Text.Encoding.GetEncoding(webresp.CharacterSet))) {
                                 response = await reader.ReadToEndAsync();
                             }
                         }

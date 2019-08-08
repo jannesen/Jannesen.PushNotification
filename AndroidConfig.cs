@@ -13,11 +13,13 @@ namespace Jannesen.PushNotification
 
         public                                                      AndroidConfig(string senderId, string authorizationKey)
         {
-            SenderId         = SenderId;
+            SenderId         = senderId;
             AuthorizationKey = authorizationKey;
         }
         public                                                      AndroidConfig(XmlElement config)
         {
+            if (config is null) throw new ArgumentNullException(nameof(config));
+
             try {
                 SenderId         = config.GetAttributeString("senderid");
                 AuthorizationKey = config.GetAttributeString("authorization-key");

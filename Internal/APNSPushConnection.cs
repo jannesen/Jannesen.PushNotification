@@ -37,7 +37,7 @@ namespace Jannesen.PushNotification.Internal
         private                     Task                        _receiveTask;
         private                     List<Notification>          _notifications;
         private                     Timer                       _connectionTimer;
-        private                     object                      _lockObject;
+        private readonly            object                      _lockObject;
 
         public                                                  APNSPushConnection(PushService service, AppleConfig config)
         {
@@ -113,8 +113,7 @@ namespace Jannesen.PushNotification.Internal
                     {
                         byte[]      bpayload;
 
-                        using (var x = new StringWriter())
-                        {
+                        using (var x = new StringWriter()) {
                             (new JsonWriter(x)).WriteValue(notification.Payload);
                             bpayload = Encoding.UTF8.GetBytes(x.ToString());
                         }
@@ -189,7 +188,7 @@ namespace Jannesen.PushNotification.Internal
             }
             catch(Exception err) {
                 Dispose();
-                Service.Error(new PushNotificationServiceException(Service, "Sending request to APSN failed.", err));
+                Service.Error(new PushNotificationServiceException("Sending request to APSN failed.", err));
             }
         }
         public      override async  Task                        CloseAsync()
@@ -224,7 +223,7 @@ namespace Jannesen.PushNotification.Internal
 
             _close();
 #if DEBUG
-            Service.Error(new PushNotificationServiceException(Service, "Shutdown of APSN connection failed."));
+            Service.Error(new PushNotificationServiceException("Shutdown of APSN connection failed."));
 #endif
         }
 
@@ -270,7 +269,7 @@ namespace Jannesen.PushNotification.Internal
                 }
 
                 if (connected)
-                    Service.Error(new PushNotificationServiceException(Service, "Receive response from APNS failed.", err));
+                    Service.Error(new PushNotificationServiceException("Receive response from APNS failed.", err));
             }
 
             if (msg != null && msg[0] == 0x08) {

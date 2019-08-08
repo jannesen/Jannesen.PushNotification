@@ -15,6 +15,7 @@ namespace Jannesen.PushNotification.Internal
         public                      void        Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         public      abstract        void        Dispose(bool disposing);
         public      abstract        Task        SendNotificationAsync(Notification notification);

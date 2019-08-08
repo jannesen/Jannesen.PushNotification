@@ -31,8 +31,9 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
+  <!-- Import CodeAnalysis if package exists in upper directory -->
+  <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('code-analysis-package.vsprops')))" Project="$([MSBuild]::GetPathOfFileAbove('code-analysis-package.vsprops'))" />
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -43,6 +44,7 @@
     <Compile Include="AppleFeedback.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Internal\APNSConnection.cs" />
     <Compile Include="Internal\FirebaseConnection.cs" />
     <Compile Include="Internal\APNSPushConnection.cs" />

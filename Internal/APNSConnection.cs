@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -16,9 +17,9 @@ namespace Jannesen.PushNotification.Internal
     internal sealed class APNSConnection: IDisposable
     {
         private                     string                      _name;
-        private                     TcpClient                   _tcpClient;
+        private readonly            TcpClient                   _tcpClient;
         private                     SslStream                   _sslStream;
-        private                     object                      _lockObject;
+        private readonly            object                      _lockObject;
 
         public                      bool                        Connected
         {
@@ -52,7 +53,7 @@ namespace Jannesen.PushNotification.Internal
 
         public              async   Task                        Connect(string hostname, int port, X509Certificate2 clientCertificate, int connectTimeout)
         {
-            _name = hostname + ":" + port.ToString();
+            _name = hostname + ":" + port.ToString(CultureInfo.InvariantCulture);
 
             Exception       timeoutError = null;
 
@@ -98,7 +99,7 @@ namespace Jannesen.PushNotification.Internal
                 Dispose();
 
                 if (err is ObjectDisposedException || err is NullReferenceException)
-                    err = (timeoutError != null) ? timeoutError : new Exception("Connect aborted.");
+                    err = timeoutError ?? new Exception("Connect aborted.");
 
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine(_name + ": Connect failed " + err.Message);

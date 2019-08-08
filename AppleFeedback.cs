@@ -14,7 +14,7 @@ namespace Jannesen.PushNotification
         internal                                        AppleFeedback(int timestamp, byte[] deviceToken)
         {
             Timestamp   = new DateTime(Internal.Library.UnixEPoch.Ticks + timestamp * TimeSpan.TicksPerSecond);
-            DeviceToken = Internal.Library.HexDump(deviceToken, deviceToken.Length).ToLower();
+            DeviceToken = Internal.Library.HexDump(deviceToken, deviceToken.Length).ToLowerInvariant();
         }
     }
 }

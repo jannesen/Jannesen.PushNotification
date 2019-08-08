@@ -14,13 +14,13 @@ namespace Jannesen.PushNotification
         public                  ErrorCallback               OnError;
         public                  SendCallback                OnSend;
 
-        private                 List<object>                _queue;
+        private readonly        List<object>                _queue;
         private                 int                         _queueSendPos;
         private                 ServiceConnection           _connection;
         private                 bool                        _workerActive;
         private                 bool                        _shutdown;
         private                 Task                        _activeWorker;
-        private                 object                      _lockObject;
+        private readonly        object                      _lockObject;
 
         public                                              PushService(ServiceConfig config)
         {
@@ -114,7 +114,7 @@ namespace Jannesen.PushNotification
 #endif
             }
             catch(Exception err) {
-                Error(new PushNotificationServiceException(this, "WorkerTask crashed!", err));
+                Error(new PushNotificationServiceException("WorkerTask crashed!", err));
             }
         }
         private                 object                      _getNextMessage()
@@ -187,7 +187,7 @@ namespace Jannesen.PushNotification
                     await connection.CloseAsync();
                 }
                 catch(Exception err) {
-                    Error(new PushNotificationServiceException(this, "Connection close failed.", err));
+                    Error(new PushNotificationServiceException("Connection close failed.", err));
                 }
                 finally {
                     connection.Dispose();
