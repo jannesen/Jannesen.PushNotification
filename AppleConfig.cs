@@ -140,6 +140,13 @@ namespace Jannesen.PushNotification
                             if (!cert.HasPrivateKey)
                                 throw new ConfigurationErrorsException("Certificate '"+ certificateName + "' has no private key.");
 
+                            try {
+                                var _ = cert.PrivateKey;
+                            }
+                            catch(Exception) {
+                                throw new ConfigurationErrorsException("Certificate '"+ certificateName + "' no read-access to private key.");
+                            }
+
                             foundCert = cert;
                         }
                     }
