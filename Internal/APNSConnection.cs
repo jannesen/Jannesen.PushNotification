@@ -16,7 +16,6 @@ namespace Jannesen.PushNotification.Internal
 {
     internal sealed class APNSConnection: IDisposable
     {
-        private                     string                      _name;
         private readonly            TcpClient                   _tcpClient;
         private                     SslStream                   _sslStream;
         private readonly            object                      _lockObject;
@@ -53,8 +52,6 @@ namespace Jannesen.PushNotification.Internal
 
         public              async   Task                        Connect(string hostname, int port, X509Certificate2 clientCertificate, int connectTimeout)
         {
-            _name = hostname + ":" + port.ToString(CultureInfo.InvariantCulture);
-
             Exception       timeoutError = null;
 
             try {
@@ -82,7 +79,7 @@ namespace Jannesen.PushNotification.Internal
                     }
 
                     try {
-                        await _sslStream.AuthenticateAsClientAsync(hostname, new X509CertificateCollection { clientCertificate }, System.Security.Authentication.SslProtocols.Tls, false);
+                        await _sslStream.AuthenticateAsClientAsync(hostname, new X509CertificateCollection { clientCertificate }, System.Security.Authentication.SslProtocols.None, false);
                     }
                     catch (System.Security.Authentication.AuthenticationException err2) {
                         throw new Exception("SSL Stream Failed to Authenticate as Client", err2);
