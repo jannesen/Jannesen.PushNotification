@@ -35,9 +35,6 @@ namespace Jannesen.PushNotification.Internal
         public                      void                        Dispose()
         {
             lock(_lockObject) {
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine(_name + ": Dispose");
-#endif
                 try {
                     if (_sslStream != null)
                         _sslStream.Dispose();
@@ -66,9 +63,6 @@ namespace Jannesen.PushNotification.Internal
                                     },
                                     null, connectTimeout, Timeout.Infinite))
                 {
-#if DEBUG
-                    System.Diagnostics.Debug.WriteLine(_name + ": Connecting");
-#endif
                     await _tcpClient.ConnectAsync(hostname, port);
 
                     lock(_lockObject) {
@@ -79,7 +73,7 @@ namespace Jannesen.PushNotification.Internal
                     }
 
                     try {
-                        await _sslStream.AuthenticateAsClientAsync(hostname, new X509CertificateCollection { clientCertificate }, System.Security.Authentication.SslProtocols.None, false);
+                        await _sslStream.AuthenticateAsClientAsync(hostname, new X509CertificateCollection { clientCertificate }, System.Security.Authentication.SslProtocols.Tls12, false);
                     }
                     catch (System.Security.Authentication.AuthenticationException err2) {
                         throw new Exception("SSL Stream Failed to Authenticate as Client", err2);
@@ -98,18 +92,12 @@ namespace Jannesen.PushNotification.Internal
                 if (err is ObjectDisposedException || err is NullReferenceException)
                     err = timeoutError ?? new Exception("Connect aborted.");
 
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine(_name + ": Connect failed " + err.Message);
-#endif
                 throw err;
             }
 
             if (timeoutError != null)
                 throw timeoutError;
 
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine(_name + ": Connected");
-#endif
         }
         public              async   Task<byte[]>                Receive(int length, bool allowEof)
         {
@@ -126,10 +114,6 @@ namespace Jannesen.PushNotification.Internal
             }
             while (sz < length);
 
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine(_name + ": RECV " + (sz > 0 ? Library.HexDump(msg, sz) : "EOF"));
-#endif
-
             if (sz == length)
                 return msg;
             if (sz == 0 && allowEof)
@@ -139,9 +123,6 @@ namespace Jannesen.PushNotification.Internal
         }
         public                      Task                        Send(byte[] msg, int length)
         {
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine(_name + ": SEND " + Library.HexDump(msg, length));
-#endif
             return _sslStream.WriteAsync(msg, 0, length);
         }
     }
