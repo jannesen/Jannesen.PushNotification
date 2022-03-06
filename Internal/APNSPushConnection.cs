@@ -180,7 +180,7 @@ namespace Jannesen.PushNotification.Internal
             }
             catch(Exception err) {
                 if (notification != null)
-                    Service.Error(new PushNotificationException(notification, "Notification to '" + notification.DeviceAddress + "' failed. Invalid notification format.", err));
+                    await Service.Error(new PushNotificationException(notification, "Notification to '" + notification.DeviceAddress + "' failed. Invalid notification format.", err));
             }
 
             try {
@@ -188,7 +188,7 @@ namespace Jannesen.PushNotification.Internal
             }
             catch(Exception err) {
                 Dispose();
-                Service.Error(new PushNotificationServiceException("Sending request to APSN failed.", err));
+                await Service.Error(new PushNotificationServiceException("Sending request to APSN failed.", err));
             }
         }
         public      override async  Task                        CloseAsync()
@@ -223,7 +223,7 @@ namespace Jannesen.PushNotification.Internal
 
             _close();
 #if DEBUG
-            Service.Error(new PushNotificationServiceException("Shutdown of APSN connection failed."));
+            await Service.Error(new PushNotificationServiceException("Shutdown of APSN connection failed."));
 #endif
         }
 
@@ -269,7 +269,7 @@ namespace Jannesen.PushNotification.Internal
                 }
 
                 if (connected)
-                    Service.Error(new PushNotificationServiceException("Receive response from APNS failed.", err));
+                    await Service.Error(new PushNotificationServiceException("Receive response from APNS failed.", err));
             }
 
             if (msg != null && msg[0] == 0x08) {
@@ -282,9 +282,9 @@ namespace Jannesen.PushNotification.Internal
                         var n = notifications[ni];
 
                         if (n != null)
-                            Service.Error((msg[1] == 0x08)
-                                            ? new PushNotificationInvalidDeviceException(n)
-                                            : new PushNotificationException(n, "Submit notification to '" + n.DeviceAddress + "' failed error #" + msg[1] + "."));
+                            await Service.Error((msg[1] == 0x08)
+                                                ? new PushNotificationInvalidDeviceException(n)
+                                                : new PushNotificationException(n, "Submit notification to '" + n.DeviceAddress + "' failed error #" + msg[1] + "."));
                     }
 
                     for (int i = 0 ; i <= ni && i < _notificationIdentifier ; ++i)
@@ -294,7 +294,7 @@ namespace Jannesen.PushNotification.Internal
                 Service.ConnectionClosed(this, notifications);
             }
             else {
-                Service.NotificationDropped(notifications, new Exception("Connection dropped by APSN."));
+                await Service.NotificationDropped(notifications, new Exception("Connection dropped by APSN."));
                 Service.ConnectionClosed(this);
             }
         }

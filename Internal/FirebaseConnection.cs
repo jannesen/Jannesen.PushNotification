@@ -35,7 +35,7 @@ namespace Jannesen.PushNotification.Internal
                 byte[]      body;
 
                 var timeToLive = (int)((notification.ExpireTime - DateTime.UtcNow).Ticks / TimeSpan.TicksPerSecond);
-                if (timeToLive < 60)
+                if (timeToLive < 15)
                     throw new Exception("Notification expired.");
 
                 using (StringWriter stringWriter = new StringWriter()) {
@@ -99,20 +99,20 @@ namespace Jannesen.PushNotification.Internal
                         if (result is JsonObject) {
                             var error = ((JsonObject)result)["error"];
 
-                            if (error is string) {
-                                Service.Error((string)error == "NotRegistered" || (string)error == "MismatchSenderId"
-                                                ? new PushNotificationInvalidDeviceException(notification)
-                                                : new PushNotificationException(notification, "Submit notification to '" + notification.DeviceAddress + "' failed error '" + error + "'."));
+                            if (error is string serror) {
+                                await Service.Error(serror == "NotRegistered" || serror == "MismatchSenderId"
+                                                    ? new PushNotificationInvalidDeviceException(notification)
+                                                    : new PushNotificationException(notification, "Submit notification to '" + notification.DeviceAddress + "' failed error '" + error + "'."));
                                 return;
                             }
                         }
                     }
 
-                    Service.Error(new PushNotificationException(notification, "Submit notification to '" + notification.DeviceAddress + "' failed error '" + response + "'."));
+                    await Service.Error(new PushNotificationException(notification, "Submit notification to '" + notification.DeviceAddress + "' failed error '" + response + "'."));
                 }
             }
             catch(Exception err) {
-                Service.Error(new PushNotificationException(notification, "Failed to submit notification to '" + notification.DeviceAddress + "'.", err));
+                await Service.Error(new PushNotificationException(notification, "Failed to submit notification to '" + notification.DeviceAddress + "'.", err));
             }
         }
     }

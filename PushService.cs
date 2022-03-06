@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Jannesen.PushNotification.Internal;
 
@@ -7,8 +8,8 @@ namespace Jannesen.PushNotification
 {
     public sealed class PushService: IDisposable
     {
-        public      delegate    void                        ErrorCallback(Exception err);
-        public      delegate    void                        SendCallback(Notification notification);
+        public      delegate    Task                        ErrorCallback(Exception err);
+        public      delegate    Task                        SendCallback(Notification notification);
 
         public                  ServiceConfig               Config                  { get; private set; }
         public                  ErrorCallback               OnError;
@@ -17,7 +18,6 @@ namespace Jannesen.PushNotification
         private readonly        List<object>                _queue;
         private                 int                         _queueSendPos;
         private                 ServiceConnection           _connection;
-        private                 bool                        _workerActive;
         private                 bool                        _shutdown;
         private                 Task                        _activeWorker;
         private readonly        object                      _lockObject;
@@ -29,7 +29,6 @@ namespace Jannesen.PushNotification
             _queue         = new List<object>();
             _queueSendPos  = 0;
             _connection    = null;
-            _workerActive  = false;
             _activeWorker  = null;
             _lockObject    = new object();
         }
@@ -58,19 +57,37 @@ namespace Jannesen.PushNotification
                 }
             }
         }
+        public          async   Task                        WaitIdle(CancellationToken cancellationToken)
+        {
+            Task                    activeWorker;
+
+            lock(_lockObject) {
+                activeWorker = _activeWorker;
+            }
+
+            if (activeWorker != null) { 
+                TaskCompletionSource<object>    tcs = new TaskCompletionSource<object>();
+
+                using (var x = cancellationToken.Register(() => { tcs.SetException(new TaskCanceledException()); })) {
+                   await Task.WhenAny(activeWorker, tcs.Task);
+                }
+            }
+        }
         public          async   Task                        ShutdownAsync()
         {
-            List<Notification>      dropped = null;
+            List<Notification>      dropped;
+            Task                    activeWorker;
 
             lock(_lockObject) {
                 _shutdown = true;
                 dropped = _dropQueue();
+                activeWorker = _activeWorker;
             }
 
-            NotificationDropped(dropped, new Exception("Shutdown"));
+            await NotificationDropped(dropped, new Exception("Shutdown"));
 
-            if (_activeWorker != null)
-                await _activeWorker;
+            if (activeWorker != null)
+                await activeWorker;
 
             await _closeConnection();
         }
@@ -86,16 +103,23 @@ namespace Jannesen.PushNotification
                 while ((msg = _getNextMessage()) != null) {
                     try {
                         if (msg is Notification) {
-                            if (_connection == null || !_connection.isAvailable)
-                                _connection = await Config.GetNewConnection(this);
+                            var connection = _connection;
+                            if (connection == null || !connection.isAvailable) {
+                                if (connection != null) {
+                                    connection.Dispose();
+                                }
 
-                            if (_connection.isAvailable) {
-                                _send((Notification)msg);
+                                _connection = connection = await Config.GetNewConnection(this);
+                            }
 
-                                await _connection.SendNotificationAsync((Notification)msg);
+                            if (connection.isAvailable) {
+                                await _send((Notification)msg);
 
-                                if (_connection.needsRecyle)
+                                await connection.SendNotificationAsync((Notification)msg);
+
+                                if (connection.needsRecyle && _connection == connection) { 
                                     await _closeConnection();
+                                }
                             }
                         }
 
@@ -106,7 +130,7 @@ namespace Jannesen.PushNotification
                         }
                     }
                     catch(Exception err) {
-                        Error(err);
+                        await Error(err);
                     }
                 }
 #if DEBUG
@@ -114,7 +138,7 @@ namespace Jannesen.PushNotification
 #endif
             }
             catch(Exception err) {
-                Error(new PushNotificationServiceException("WorkerTask crashed!", err));
+                await Error(new PushNotificationServiceException("WorkerTask crashed!", err));
             }
         }
         private                 object                      _getNextMessage()
@@ -131,7 +155,7 @@ namespace Jannesen.PushNotification
                         return msg;
                 }
 
-                _workerActive = false;
+                _activeWorker = null;
 
                 _queue.Clear();
                 _queueSendPos = 0;
@@ -141,10 +165,10 @@ namespace Jannesen.PushNotification
                 return null;
             }
         }
-        private                 void                        _send(Notification notification)
+        private         async   Task                        _send(Notification notification)
         {
             try {
-                OnSend?.Invoke(notification);
+                await OnSend?.Invoke(notification);
             }
             catch(Exception err) {
                 System.Diagnostics.Debug.WriteLine("SEND CALLBACK FAILED: " + err.Message);
@@ -168,8 +192,7 @@ namespace Jannesen.PushNotification
         }
         private                 void                        _startWorker()
         {
-            if (!_workerActive) {
-                _workerActive = true;
+            if (_activeWorker == null) {
                 _activeWorker = Task.Run(_workerTaskAsync);
             }
         }
@@ -187,7 +210,7 @@ namespace Jannesen.PushNotification
                     await connection.CloseAsync();
                 }
                 catch(Exception err) {
-                    Error(new PushNotificationServiceException("Connection close failed.", err));
+                    await Error(new PushNotificationServiceException("Connection close failed.", err));
                 }
                 finally {
                     connection.Dispose();
@@ -195,7 +218,7 @@ namespace Jannesen.PushNotification
             }
         }
 
-        internal                void                        Error(Exception error)
+        internal        async   Task                        Error(Exception error)
         {
 #if DEBUG
             {
@@ -208,7 +231,7 @@ namespace Jannesen.PushNotification
             }
 #endif
             try {
-                OnError?.Invoke(error);
+                await OnError?.Invoke(error);
             }
             catch(Exception err) {
                 System.Diagnostics.Debug.WriteLine("ONERROR CALLBACK FAILED: " + err.Message);
@@ -240,12 +263,12 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        internal                void                        NotificationDropped(List<Notification> notifications, Exception err)
+        internal        async   Task                        NotificationDropped(List<Notification> notifications, Exception err)
         {
             if (notifications != null) {
                 foreach(var n in notifications) {
                     if (n != null)
-                        Error(new PushNotificationException(n, "Notification to '" + n.DeviceAddress + "' dropped.", err));
+                        await Error(new PushNotificationException(n, "Notification to '" + n.DeviceAddress + "' dropped.", err));
                 }
             }
         }

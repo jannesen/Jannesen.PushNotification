@@ -72,8 +72,8 @@ namespace Jannesen.PushNotification
             try {
                 Development      = config.GetAttributeBool("development", false);
                 ClientCertificate = _loadCertificate(config.GetAttributeString("certificate"));
-                FeedbackInterval = config.GetAttributeInt("feedback-interval", 0,   24) * 3600000;
-                RecyleCount      = config.GetAttributeInt("recyle-count", 1, 1024, 128);
+                FeedbackInterval = config.GetAttributeInt("feedback-interval", 0,    24) * 3600000;
+                RecyleCount      = config.GetAttributeInt("recyle-count",  1, 1024, 128);
                 RecyleTimout     = config.GetAttributeInt("recyle-timout", 1,   30,   5) * 1000;
             }
             catch(Exception err) {

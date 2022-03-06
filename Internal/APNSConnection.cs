@@ -16,6 +16,8 @@ namespace Jannesen.PushNotification.Internal
 {
     internal sealed class APNSConnection: IDisposable
     {
+
+
         private readonly            TcpClient                   _tcpClient;
         private                     SslStream                   _sslStream;
         private readonly            object                      _lockObject;
@@ -34,6 +36,9 @@ namespace Jannesen.PushNotification.Internal
         }
         public                      void                        Dispose()
         {
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine("APNSConnection: DISPOSE");
+#endif
             lock(_lockObject) {
                 try {
                     if (_sslStream != null)
@@ -52,17 +57,19 @@ namespace Jannesen.PushNotification.Internal
             Exception       timeoutError = null;
 
             try {
-                using (new Timer((object state) =>
-                                    {
-                                        lock(_lockObject) {
-                                            if (_tcpClient != null) {
-                                                timeoutError = new TimeoutException("Timeout");
-                                                Dispose();
-                                            }
-                                        }
-                                    },
-                                    null, connectTimeout, Timeout.Infinite))
+                using (new Timer((object state) => {
+                                     lock(_lockObject) {
+                                         if (_tcpClient != null) {
+                                             timeoutError = new TimeoutException("Timeout");
+                                             Dispose();
+                                         }
+                                     }
+                                 },
+                                 null, connectTimeout, Timeout.Infinite))
                 {
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine("APNSConnection: CONNECT");
+#endif
                     await _tcpClient.ConnectAsync(hostname, port);
 
                     lock(_lockObject) {
@@ -84,9 +91,15 @@ namespace Jannesen.PushNotification.Internal
 
                     if (!_sslStream.CanWrite)
                         throw new Exception("SSL Stream is not Writable");
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine("APNSConnection: CONNECTED");
+#endif
                 }
             }
             catch(Exception err) {
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine("APNSConnection: ERROR " + err.Message);
+#endif
                 Dispose();
 
                 if (err is ObjectDisposedException || err is NullReferenceException)
@@ -97,7 +110,6 @@ namespace Jannesen.PushNotification.Internal
 
             if (timeoutError != null)
                 throw timeoutError;
-
         }
         public              async   Task<byte[]>                Receive(int length, bool allowEof)
         {
@@ -114,6 +126,10 @@ namespace Jannesen.PushNotification.Internal
             }
             while (sz < length);
 
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine("APNSConnection: RECV " + _hexDump(msg, length));
+#endif
+
             if (sz == length)
                 return msg;
             if (sz == 0 && allowEof)
@@ -123,7 +139,31 @@ namespace Jannesen.PushNotification.Internal
         }
         public                      Task                        Send(byte[] msg, int length)
         {
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine("APNSConnection: SEND " + _hexDump(msg, length));
+#endif
             return _sslStream.WriteAsync(msg, 0, length);
         }
+
+#if DEBUG
+        private static readonly     char[]                      _hexTable = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        private static              string                      _hexDump(byte[] msg, int length)
+        {
+            var s = new StringBuilder();
+
+            for (int i = 0 ; i < length ; ++i) {
+                var b = msg[i];
+
+                if (i > 0) { 
+                    s.Append(' ');
+                }
+
+                s.Append(_hexTable[(b >> 4) & 0xf]);
+                s.Append(_hexTable[(b     ) & 0xf]);
+            }
+
+            return s.ToString();
+        }
+#endif
     }
 }
