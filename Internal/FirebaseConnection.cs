@@ -36,7 +36,7 @@ namespace Jannesen.PushNotification.Internal
 
                 var timeToLive = (int)((notification.ExpireTime - DateTime.UtcNow).Ticks / TimeSpan.TicksPerSecond);
                 if (timeToLive < 15)
-                    throw new Exception("Notification expired.");
+                    throw new PushNotificationExpiredException(notification);
 
                 using (StringWriter stringWriter = new StringWriter()) {
                     using (JsonWriter jsonWriter = new JsonWriter(stringWriter)) {

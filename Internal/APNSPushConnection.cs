@@ -133,7 +133,7 @@ namespace Jannesen.PushNotification.Internal
                     {
                         var expireTime = notification.ExpireTime;
                         if (expireTime.Ticks < DateTime.UtcNow.Ticks + TimeSpan.TicksPerMinute)
-                            throw new FormatException("Notification expired.");
+                            throw new PushNotificationExpiredException(notification);
 
                         var     v = (Int32)((expireTime - Library.UnixEPoch).Ticks / TimeSpan.TicksPerSecond);
 

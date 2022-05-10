@@ -73,6 +73,18 @@ namespace Jannesen.PushNotification
     }
 
     [Serializable]
+    public class PushNotificationExpiredException: PushNotificationException
+    {
+        public                              PushNotificationExpiredException(Notification notification): base(notification, "Notification expired device-token '" + notification.DeviceAddress + "'.")
+        {
+        }
+
+        protected                           PushNotificationExpiredException(SerializationInfo info, StreamingContext context): base(info, context)
+        {
+        }
+    }
+
+    [Serializable]
     public class PushNotificationServiceException: Exception
     {
         public                              PushNotificationServiceException(string message): base(message)
