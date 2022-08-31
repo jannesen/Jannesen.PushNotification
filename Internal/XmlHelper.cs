@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Xml;
 
 namespace Jannesen.PushNotification.Internal
@@ -11,7 +10,7 @@ namespace Jannesen.PushNotification.Internal
             string  s = elm.GetAttribute(attrName);
 
             if (string.IsNullOrEmpty(s))
-                throw new ConfigurationErrorsException("Missing attribute '" + attrName + "'.", elm);
+                throw new FormatException("Missing attribute '" + attrName + "'.");
 
             return s;
         }
@@ -32,7 +31,7 @@ namespace Jannesen.PushNotification.Internal
                 return true;
 
             default:
-                throw new ConfigurationErrorsException("Invalid bool value '" + s + "' in attribute '" + attrName + "'.", elm);
+                throw new FormatException("Invalid bool value '" + s + "' in attribute '" + attrName + "'.");
             }
         }
         public  static      int         GetAttributeInt(this XmlElement elm, string attrName, int minValue, int maxValue)
@@ -40,10 +39,10 @@ namespace Jannesen.PushNotification.Internal
             string  s = elm.GetAttributeString(attrName);
 
             if (!int.TryParse(s, out var rtn))
-                throw new ConfigurationErrorsException("Invalid int value '" + s + "' in attribute '" + attrName + "'.", elm);
+                throw new FormatException("Invalid int value '" + s + "' in attribute '" + attrName + "'.");
 
             if (minValue > rtn || rtn > maxValue)
-                throw new ConfigurationErrorsException("Invalid int value '" + s + "' in attribute '" + attrName + "'.", elm);
+                throw new FormatException("Invalid int value '" + s + "' in attribute '" + attrName + "'.");
 
             return rtn;
         }
@@ -55,10 +54,10 @@ namespace Jannesen.PushNotification.Internal
                 return defaultValue;
 
             if (!int.TryParse(s, out var rtn))
-                throw new ConfigurationErrorsException("Invalid int value '" + s + "' in attribute '" + attrName + "'.", elm);
+                throw new FormatException("Invalid int value '" + s + "' in attribute '" + attrName + "'.");
 
             if (minValue > rtn || rtn > maxValue)
-                throw new ConfigurationErrorsException("int value '" + s + "' in attribute '" + attrName + "' out of range.", elm);
+                throw new FormatException("int value '" + s + "' in attribute '" + attrName + "' out of range.");
 
             return rtn;
         }

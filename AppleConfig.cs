@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +76,7 @@ namespace Jannesen.PushNotification
                 RecyleTimout     = config.GetAttributeInt("recyle-timout", 1,   30,   5) * 1000;
             }
             catch(Exception err) {
-                throw new ConfigurationErrorsException("Parsing Apple configuration failed.", err);
+                throw new PushNotificationConfigException("Parsing Apple configuration failed.", err);
             }
         }
 
@@ -131,20 +130,20 @@ namespace Jannesen.PushNotification
                     store.Open(OpenFlags.ReadOnly);
                 }
                 catch(Exception err) {
-                    throw new ConfigurationErrorsException("Failed to open X509Store", err);
+                    throw new PushNotificationConfigException("Failed to open X509Store", err);
                 }
 
                 foreach (var cert in store.Certificates) {
                     if (cert.NotBefore < DateTime.UtcNow && cert.NotAfter > DateTime.UtcNow.AddHours(-12) && cert.Subject == certificateName) {
                         if (foundCert == null || foundCert.NotAfter < cert.NotAfter) {
                             if (!cert.HasPrivateKey)
-                                throw new ConfigurationErrorsException("Certificate '"+ certificateName + "' has no private key.");
+                                throw new PushNotificationConfigException("Certificate '"+ certificateName + "' has no private key.");
 
                             try {
                                 var _ = cert.PrivateKey;
                             }
                             catch(Exception) {
-                                throw new ConfigurationErrorsException("Certificate '"+ certificateName + "' no read-access to private key.");
+                                throw new PushNotificationConfigException("Certificate '"+ certificateName + "' no read-access to private key.");
                             }
 
                             foundCert = cert;
@@ -156,7 +155,7 @@ namespace Jannesen.PushNotification
             if (foundCert != null)
                 return foundCert;
 
-            throw new ConfigurationErrorsException("Certificate '" + certificateName + "' not found in store.");
+            throw new PushNotificationConfigException("Certificate '" + certificateName + "' not found in store.");
         }
         private     static  async   Task<List<AppleFeedback>>           _feedbackReadResponse(Internal.APNSConnection connection)
         {

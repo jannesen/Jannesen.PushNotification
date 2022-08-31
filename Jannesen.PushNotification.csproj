@@ -34,10 +34,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Jannesen.FileFormat.Json\Jannesen.FileFormat.Json.csproj">
       <Name>Jannesen.FileFormat.Json</Name>
     </ProjectReference>

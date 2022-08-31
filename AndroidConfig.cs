@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Threading.Tasks;
 using System.Xml;
 using Jannesen.PushNotification.Internal;
@@ -25,7 +24,7 @@ namespace Jannesen.PushNotification
                 AuthorizationKey = config.GetAttributeString("authorization-key");
             }
             catch(Exception err) {
-                throw new ConfigurationErrorsException("Parsing Android configuration failed.", err);
+                throw new PushNotificationConfigException("Parsing Android configuration failed.", err);
             }
         }
 
