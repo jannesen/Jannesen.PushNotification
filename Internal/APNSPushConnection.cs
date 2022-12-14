@@ -13,7 +13,7 @@ using Jannesen.FileFormat.Json;
 
 namespace Jannesen.PushNotification.Internal
 {
-    internal class APNSPushConnection: ServiceConnection
+    internal sealed class APNSPushConnection: ServiceConnection
     {
         public      readonly        PushService                 Service;
         public      readonly        AppleConfig                 Config;

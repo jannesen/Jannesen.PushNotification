@@ -2,7 +2,7 @@
 
 namespace Jannesen.PushNotification.Internal
 {
-    internal class ShutdownMessage
+    internal sealed class ShutdownMessage
     {
         public      readonly        ServiceConnection       Connection;
 

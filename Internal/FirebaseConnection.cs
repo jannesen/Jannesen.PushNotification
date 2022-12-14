@@ -8,7 +8,7 @@ using Jannesen.FileFormat.Json;
 
 namespace Jannesen.PushNotification.Internal
 {
-    internal class FirebaseConnection: ServiceConnection
+    internal sealed class FirebaseConnection: ServiceConnection
     {
         public      readonly        PushService                 Service;
         public      readonly        AndroidConfig               Config;
