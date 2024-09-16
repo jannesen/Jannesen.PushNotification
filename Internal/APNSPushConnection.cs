@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jannesen.FileFormat.Json;
+using Jannesen.PushNotification.Library;
 
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/BinaryProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH13-SW1
 
@@ -106,7 +104,7 @@ namespace Jannesen.PushNotification.Internal
                         msg[pos++] = 32;
 
                         for (int i = 0 ; i < deviceToken.Length ; i += 2)
-                            msg[pos++] = (byte)(Library.HexToNibble(deviceToken[i]) << 4 | Library.HexToNibble(deviceToken[i + 1]));
+                            msg[pos++] = (byte)(StaticLib.HexToNibble(deviceToken[i]) << 4 | StaticLib.HexToNibble(deviceToken[i + 1]));
                     }
 
                     // 2 Payload
@@ -135,7 +133,7 @@ namespace Jannesen.PushNotification.Internal
                         if (expireTime.Ticks < DateTime.UtcNow.Ticks + TimeSpan.TicksPerMinute)
                             throw new PushNotificationExpiredException(notification);
 
-                        var     v = (Int32)((expireTime - Library.UnixEPoch).Ticks / TimeSpan.TicksPerSecond);
+                        var     v = (Int32)((expireTime - StaticLib.UnixEPoch).Ticks / TimeSpan.TicksPerSecond);
 
                         msg[pos++] = 0x04;
                         msg[pos++] = 0;

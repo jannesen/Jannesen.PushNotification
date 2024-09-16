@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml;
 
-namespace Jannesen.PushNotification.Internal
+namespace Jannesen.PushNotification.Library
 {
     static class XmlHelper
     {
