@@ -34,6 +34,16 @@ namespace Jannesen.PushNotification
         }
     }
 
+    public class PushNotificationAuthenticationException: Exception
+    {
+        public                              PushNotificationAuthenticationException(string message): base(message)
+        {
+        }
+        public                              PushNotificationAuthenticationException(string message, Exception innerException): base(message, innerException)
+        {
+        }
+    }
+
     public enum PushNotificationErrorReason
     {
         Unknown                 = 0,
