@@ -12,7 +12,7 @@ namespace Jannesen.PushNotification.Library
             public      string      alg;
             public      string      kid;
 
-                        void        IJsonSerializer.Serializer(JsonWriter jsonWriter)
+                        void        IJsonSerializer.WriteTo(JsonWriter jsonWriter)
             {
                 jsonWriter.WriteStartObject();
                 jsonWriter.WriteNameValue("alg", alg);

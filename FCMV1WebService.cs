@@ -22,7 +22,7 @@ namespace Jannesen.PushNotification
             public          int             exp;
             public          int             iat;
 
-                        void        IJsonSerializer.Serializer(JsonWriter jsonWriter)
+                            void            IJsonSerializer.WriteTo(JsonWriter jsonWriter)
             {
                 jsonWriter.WriteStartObject();
                 jsonWriter.WriteNameValue("scope",              String.Join(" ", scopes));
@@ -244,8 +244,11 @@ namespace Jannesen.PushNotification
         }
         private static          string                      _formatData(object value)
         {
-            if (value is string valueString)    return valueString;
-            if (value is IJsonSerialize iserialize) {
+            if (value is string valueString) {
+                return valueString;
+            }
+
+            if (value is IJsonSerializer iserialize) {
                 using (var text = new StringWriter()) {
                     using (var jsonWriter = new JsonWriter(text, true, true)) {
                         iserialize.WriteTo(jsonWriter);
