@@ -98,23 +98,6 @@ namespace Jannesen.PushNotification
         {
             return new PushService(this);
         }
-        public               async  Task<List<AppleFeedback>>           Feedback()
-        {
-            Task<List<AppleFeedback>>   readTask;
-
-            using (var connection = new Internal.APNSConnection()) {
-                await connection.Connect(Development ? "feedback.sandbox.push.apple.com" : "feedback.push.apple.com", 2196, ClientCertificate, 30 * 1000);
-
-                readTask = _feedbackReadResponse(connection);
-
-                using (CancellationTokenSource cts = new CancellationTokenSource(15000))
-                    await Task.WhenAny(readTask, Task.Delay(-1, cts.Token));
-            }
-
-            await readTask;
-
-            return readTask.Result;
-        }
 
         public      override        string                              ToString()
         {
@@ -156,21 +139,6 @@ namespace Jannesen.PushNotification
                 return foundCert;
 
             throw new PushNotificationConfigException("Certificate '" + certificateName + "' not found in store.");
-        }
-        private     static  async   Task<List<AppleFeedback>>           _feedbackReadResponse(Internal.APNSConnection connection)
-        {
-            var rtn = new List<AppleFeedback>();
-
-            byte[]      msg;
-
-            while ((msg = await connection.Receive(6, true)) != null) {
-                var timestamp   = (msg[0] << 24) | (msg[1] << 16) | (msg[2] << 8) | (msg[3]);
-                var deviceToken = await connection.Receive((msg[4] << 8) | (msg[5]), false);
-
-                rtn.Add(new AppleFeedback(timestamp, deviceToken));
-            }
-
-            return rtn;
         }
     }
 }
