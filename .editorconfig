@@ -47,5 +47,8 @@ dotnet_diagnostic.CA2201.severity = none
 # CA2234: Modify 'FirebaseConnection.SendNotificationAsync(Notification)' to call 'WebRequest.Create(Uri)' instead of 'WebRequest.Create(string)'
 dotnet_diagnostic.CA2234.severity = none
 
+# CA2237: Mark ISerializable types with SerializableAttribute
+dotnet_diagnostic.CA2237.severity = none
+
 # CA5398: Avoid hardcoding SslProtocols 'Tls12' to ensure your application remains secure in the future. Use 'None' to let the Operating System choose a version.
 dotnet_diagnostic.CA5398.severity = none
