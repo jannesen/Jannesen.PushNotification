@@ -34,7 +34,7 @@ namespace Jannesen.PushNotification
         }
         public                  void                        Dispose()
         {
-            ServiceConnection   connection;
+            APNSLegacyPushConnection    connection;
 
             lock(_lockObject) {
                 connection = _connection;
@@ -246,7 +246,7 @@ namespace Jannesen.PushNotification
                 System.Diagnostics.Debug.WriteLine("ONERROR CALLBACK FAILED: " + err.Message);
             }
         }
-        internal                void                        ConnectionClosed(ServiceConnection connection, List<Notification> requeueNotifications = null)
+        internal                void                        ConnectionClosed(APNSLegacyPushConnection connection, List<Notification> requeueNotifications = null)
         {
             lock(_lockObject) {
                 if (_connection == connection)
@@ -263,7 +263,7 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        internal                void                        RecyleConnection(ServiceConnection connection)
+        internal                void                        RecyleConnection(APNSLegacyPushConnection connection)
         {
             lock(_lockObject) {
                 if (_connection == connection && !_shutdown) {

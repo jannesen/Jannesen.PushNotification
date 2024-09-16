@@ -11,18 +11,18 @@ using Jannesen.PushNotification.Library;
 
 namespace Jannesen.PushNotification
 {
-    internal sealed class APNSLegacyPushConnection: Internal.ServiceConnection
+    internal sealed class APNSLegacyPushConnection: IDisposable
     {
-        public      readonly        APNSLegacyService                 Service;
+        public      readonly        APNSLegacyService           Service;
         public      readonly        APNSLegacyConfig            Config;
 
-        public      override        bool                        isAvailable
+        public                      bool                        isAvailable
         {
             get {
                 return _isAvailable;
             }
         }
-        public      override        bool                        needsRecyle
+        public                      bool                        needsRecyle
         {
             get {
                 return _notificationIdentifier >= Config.RecyleCount;
@@ -46,7 +46,7 @@ namespace Jannesen.PushNotification
             _isAvailable            = false;
             _lockObject             = new object();
         }
-        public      override        void                        Dispose(bool disposing)
+        public                      void                        Dispose()
         {
             _close();
         }
@@ -73,7 +73,7 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        public      override async  Task                        SendNotificationAsync(Notification notification)
+        public               async  Task                        SendNotificationAsync(Notification notification)
         {
             byte[]      msg = new byte[2102];
 
@@ -189,7 +189,7 @@ namespace Jannesen.PushNotification
                 await Service.Error(new PushNotificationServiceException("Sending request to APSN failed.", err));
             }
         }
-        public      override async  Task                        CloseAsync()
+        public               async  Task                        CloseAsync()
         {
             _isAvailable = false;
 

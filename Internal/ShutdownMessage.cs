@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
 namespace Jannesen.PushNotification.Internal
 {
     internal sealed class ShutdownMessage
     {
-        public      readonly        ServiceConnection       Connection;
+        public      readonly        APNSLegacyPushConnection    Connection;
 
-        public                                              ShutdownMessage(ServiceConnection connection)
+        public                                                  ShutdownMessage(APNSLegacyPushConnection connection)
         {
             Connection = connection;
         }
