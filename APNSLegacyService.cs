@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jannesen.PushNotification.Internal;
 
 namespace Jannesen.PushNotification
 {
@@ -10,6 +9,16 @@ namespace Jannesen.PushNotification
     {
         public      delegate    Task                        ErrorCallback(Exception err);
         public      delegate    Task                        SendCallback(Notification notification);
+
+        private sealed class RecyleMessage
+        {
+            public      readonly        APNSLegacyPushConnection    Connection;
+
+            public                                                  RecyleMessage(APNSLegacyPushConnection connection)
+            {
+                Connection = connection;
+            }
+        }
 
         public                  APNSLegacyConfig            Config                  { get; private set; }
         public                  ErrorCallback               OnError;
@@ -107,11 +116,11 @@ namespace Jannesen.PushNotification
                             if (connection == null || !connection.isAvailable) {
                                 if (connection != null) {
                                     connection.Dispose();
+                                    _connection = null;
                                 }
 
                                 try {
                                     connection = new APNSLegacyPushConnection(this, Config);
-
                                     await connection.ConnectAsync();
                                 }
                                 catch(Exception err) {
@@ -132,8 +141,8 @@ namespace Jannesen.PushNotification
                             }
                         }
 
-                        if (msg is ShutdownMessage) {
-                            var sc = ((ShutdownMessage)msg).Connection;
+                        if (msg is RecyleMessage) {
+                            var sc = ((RecyleMessage)msg).Connection;
                             if (sc == null || _connection == sc)
                                 await _closeConnection();
                         }
@@ -267,7 +276,7 @@ namespace Jannesen.PushNotification
         {
             lock(_lockObject) {
                 if (_connection == connection && !_shutdown) {
-                    _queue.Insert(_queueSendPos, new Internal.ShutdownMessage(connection));
+                    _queue.Insert(_queueSendPos, new RecyleMessage(connection));
                     _startWorker();
                 }
             }
