@@ -288,7 +288,7 @@ namespace Jannesen.PushNotification
             if (notifications != null) {
                 foreach(var n in notifications) {
                     if (n != null)
-                        await Error(new PushNotificationException(n, "Notification to '" + n.DeviceToken + "' dropped.", err));
+                        await Error(new PushNotificationException("PushMessage to '" + n.DeviceToken + "' dropped.", PushNotificationErrorReason.Dropped, n, err));
                 }
             }
         }

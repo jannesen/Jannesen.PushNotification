@@ -24,34 +24,6 @@ namespace Jannesen.PushNotification
         }
     }
 
-    public class PushNotificationException: Exception
-    {
-        public          PushMessage         Notification             { get; private set; }
-
-        public                              PushNotificationException(PushMessage notification, string message): base(message)
-        {
-            this.Notification = notification;
-        }
-        public                              PushNotificationException(PushMessage notification, string message, Exception innerException): base(message, innerException)
-        {
-            this.Notification = notification;
-        }
-    }
-
-    public class PushNotificationInvalidDeviceException: PushNotificationException
-    {
-        public                              PushNotificationInvalidDeviceException(PushMessage notification): base(notification, "Invalid device-token '" + notification.DeviceToken + "'.")
-        {
-        }
-    }
-
-    public class PushNotificationExpiredException: PushNotificationException
-    {
-        public                              PushNotificationExpiredException(PushMessage notification): base(notification, "Notification expired device-token '" + notification.DeviceToken + "'.")
-        {
-        }
-    }
-
     public class PushNotificationServiceException: Exception
     {
         public                              PushNotificationServiceException(string message): base(message)
@@ -59,6 +31,34 @@ namespace Jannesen.PushNotification
         }
         public                              PushNotificationServiceException(string message, Exception innerException): base(message, innerException)
         {
+        }
+    }
+
+    public enum PushNotificationErrorReason
+    {
+        Unknown                 = 0,
+        InvalidDeviceToken      = 1,
+        DeviceNotFound          = 2,
+        MessageExpired          = 3,
+        InvalidMessage          = 4,
+        Dropped                 = 5,
+        ServiceError            = 10
+    }
+
+    public class PushNotificationException: Exception
+    {
+        public          PushNotificationErrorReason    Reason                  { get; private set; }
+        public          PushMessage                    Notification            { get; private set; }
+
+        public                                          PushNotificationException(string message, PushNotificationErrorReason reason, PushMessage notification): base(message)
+        {
+            this.Reason       = reason;
+            this.Notification = notification;
+        }
+        public                                          PushNotificationException(string message, PushNotificationErrorReason reason, PushMessage notification, Exception innerException): base(message, innerException)
+        {
+            this.Reason       = reason;
+            this.Notification = notification;
         }
     }
 }

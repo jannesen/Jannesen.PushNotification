@@ -121,7 +121,7 @@ namespace Jannesen.PushNotification
                     {
                         var expireTime = notification.ExpireTime;
                         if (expireTime.Ticks < DateTime.UtcNow.Ticks + TimeSpan.TicksPerMinute)
-                            throw new PushNotificationExpiredException(notification);
+                            throw new PushNotificationException("PushMessage expired.", PushNotificationErrorReason.MessageExpired, notification);
 
                         var     v = (Int32)((expireTime - StaticLib.UnixEPoch).Ticks / TimeSpan.TicksPerSecond);
 
@@ -168,7 +168,7 @@ namespace Jannesen.PushNotification
             }
             catch(Exception err) {
                 if (notification != null)
-                    await Service.Error(new PushNotificationException(notification, "Notification to '" + notification.DeviceToken + "' failed. Invalid notification format.", err));
+                    await Service.Error(new PushNotificationException("PushMessage to '" + notification.DeviceToken + "' failed. Invalid notification format.", PushNotificationErrorReason.InvalidMessage, notification, err));
             }
 
             try {
@@ -273,8 +273,8 @@ namespace Jannesen.PushNotification
 
                         if (n != null)
                             await Service.Error((msg[1] == 0x08)
-                                                ? new PushNotificationInvalidDeviceException(n)
-                                                : new PushNotificationException(n, "Submit notification to '" + n.DeviceToken + "' failed error #" + msg[1] + "."));
+                                                ? new PushNotificationException("Unknown device.", PushNotificationErrorReason.DeviceNotFound, n)
+                                                : new PushNotificationException("Submit notification to '" + n.DeviceToken + "' failed error #" + msg[1] + ".", PushNotificationErrorReason.ServiceError, n));
                     }
 
                     for (int i = 0 ; i <= ni && i < _notificationIdentifier ; ++i)
