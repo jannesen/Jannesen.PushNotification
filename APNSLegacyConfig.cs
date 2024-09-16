@@ -6,7 +6,7 @@ using Jannesen.PushNotification.Library;
 
 namespace Jannesen.PushNotification
 {
-    public class APNSLegacyConfig: ServiceConfig
+    public class APNSLegacyConfig
     {
         public                      bool                                Development                 { get; private set; }
         public                      X509Certificate2                    ClientCertificate           { get; private set; }
@@ -78,21 +78,7 @@ namespace Jannesen.PushNotification
             }
         }
 
-        internal    override async  Task<Internal.ServiceConnection>    GetNewConnection(APNSLegacyService service)
-        {
-            try {
-                var connection = new Internal.APNSLegacyPushConnection(service, this);
-
-                await connection.ConnectAsync();
-
-                return  connection;
-            }
-            catch(Exception err) {
-                throw new PushNotificationConnectionException("Appl.GetNewConnection failed.", err);
-            }
-        }
-
-        public                      APNSLegacyService                         PushService()
+        public                      APNSLegacyService                   PushService()
         {
             return new APNSLegacyService(this);
         }

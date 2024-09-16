@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,18 +11,18 @@ namespace Jannesen.PushNotification
         public      delegate    Task                        ErrorCallback(Exception err);
         public      delegate    Task                        SendCallback(Notification notification);
 
-        public                  ServiceConfig               Config                  { get; private set; }
+        public                  APNSLegacyConfig            Config                  { get; private set; }
         public                  ErrorCallback               OnError;
         public                  SendCallback                OnSend;
 
         private readonly        List<object>                _queue;
         private                 int                         _queueSendPos;
-        private                 ServiceConnection           _connection;
+        private                 APNSLegacyPushConnection    _connection;
         private                 bool                        _shutdown;
         private                 Task                        _activeWorker;
         private readonly        object                      _lockObject;
 
-        public                                              APNSLegacyService(ServiceConfig config)
+        public                                              APNSLegacyService(APNSLegacyConfig config)
         {
             Config = config;
 
@@ -109,7 +109,16 @@ namespace Jannesen.PushNotification
                                     connection.Dispose();
                                 }
 
-                                _connection = connection = await Config.GetNewConnection(this);
+                                try {
+                                    connection = new APNSLegacyPushConnection(this, Config);
+
+                                    await connection.ConnectAsync();
+                                }
+                                catch(Exception err) {
+                                    throw new PushNotificationConnectionException("Appl.GetNewConnection failed.", err);
+                                }
+
+                                _connection = connection;
                             }
 
                             if (connection.isAvailable) {
@@ -198,7 +207,7 @@ namespace Jannesen.PushNotification
         }
         private         async   Task                        _closeConnection()
         {
-            ServiceConnection       connection;
+            APNSLegacyPushConnection   connection;
 
             lock(_lockObject) {
                 connection = _connection;
