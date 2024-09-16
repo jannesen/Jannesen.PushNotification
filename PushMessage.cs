@@ -1,18 +1,17 @@
-﻿
+
 using System;
 using Jannesen.FileFormat.Json;
 
 namespace Jannesen.PushNotification
 {
-    [Serializable]
-    public class Notification
+    public class PushMessage
     {
-        public      readonly    string          DeviceAddress;
+        public      readonly    string          DeviceToken;
         public      readonly    JsonObject      Payload;
-        public      readonly    DateTime        ExpireTime;
         public      readonly    bool            HighPriority;
+        public      readonly    DateTime        ExpireTime;
 
-        public                                  Notification(string deviceToken, JsonObject payload, DateTime expireTime, bool highPriority)
+        public                                  PushMessage(string deviceToken, JsonObject payload, bool highPriority, DateTime expireTime)
         {
             if (string.IsNullOrEmpty(deviceToken))
                 throw new ArgumentException("Invalid deviceToken.");
@@ -23,12 +22,12 @@ namespace Jannesen.PushNotification
             if (expireTime.Ticks < DateTime.UtcNow.Ticks + TimeSpan.TicksPerMinute)
                 throw new ArgumentException("Invalid expireTime.");
 
-            DeviceAddress  = deviceToken;
+            DeviceToken  = deviceToken;
             Payload      = payload;
-            ExpireTime   = expireTime;
             HighPriority = highPriority;
+            ExpireTime   = expireTime;
         }
-        public                                  Notification(string deviceToken, JsonObject payload, TimeSpan timeToLive, bool highPriority)
+        public                                  PushMessage(string deviceToken, JsonObject payload, bool highPriority, TimeSpan timeToLive)
         {
             if (string.IsNullOrEmpty(deviceToken))
                 throw new ArgumentException("Invalid deviceToken.");
@@ -39,10 +38,10 @@ namespace Jannesen.PushNotification
             if (timeToLive.Ticks < TimeSpan.TicksPerMinute)
                 throw new ArgumentException("Invalid timeToLive.");
 
-            DeviceAddress  = deviceToken;
+            DeviceToken  = deviceToken;
             Payload      = payload;
-            ExpireTime   = DateTime.UtcNow + timeToLive;
             HighPriority = highPriority;
+            ExpireTime   = DateTime.UtcNow + timeToLive;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Jannesen.PushNotification
     public sealed class APNSLegacyService: IDisposable
     {
         public      delegate    Task                        ErrorCallback(Exception err);
-        public      delegate    Task                        SendCallback(Notification notification);
+        public      delegate    Task                        SendCallback(PushMessage notification);
 
         private sealed class RecyleMessage
         {
@@ -57,7 +57,7 @@ namespace Jannesen.PushNotification
             }
         }
 
-        public                  void                        SendNotification(Notification notification)
+        public                  void                        SendNotification(PushMessage notification)
         {
             lock(_lockObject) {
                 if (!_shutdown) {
@@ -84,7 +84,7 @@ namespace Jannesen.PushNotification
         }
         public          async   Task                        ShutdownAsync()
         {
-            List<Notification>      dropped;
+            List<PushMessage>       dropped;
             Task                    activeWorker;
 
             lock(_lockObject) {
@@ -111,7 +111,7 @@ namespace Jannesen.PushNotification
 
                 while ((msg = _getNextMessage()) != null) {
                     try {
-                        if (msg is Notification) {
+                        if (msg is PushMessage) {
                             var connection = _connection;
                             if (connection == null || !connection.isAvailable) {
                                 if (connection != null) {
@@ -131,9 +131,9 @@ namespace Jannesen.PushNotification
                             }
 
                             if (connection.isAvailable) {
-                                await _send((Notification)msg);
+                                await _send((PushMessage)msg);
 
-                                await connection.SendNotificationAsync((Notification)msg);
+                                await connection.SendNotificationAsync((PushMessage)msg);
 
                                 if (connection.needsRecyle && _connection == connection) { 
                                     await _closeConnection();
@@ -183,7 +183,7 @@ namespace Jannesen.PushNotification
                 return null;
             }
         }
-        private         async   Task                        _send(Notification notification)
+        private         async   Task                        _send(PushMessage notification)
         {
             try {
                 await OnSend?.Invoke(notification);
@@ -192,15 +192,15 @@ namespace Jannesen.PushNotification
                 System.Diagnostics.Debug.WriteLine("SEND CALLBACK FAILED: " + err.Message);
             }
         }
-        private                 List<Notification>          _dropQueue()
+        private                 List<PushMessage>           _dropQueue()
         {
-            var dropped = new List<Notification>();
+            var dropped = new List<PushMessage>();
 
             while (_queueSendPos < _queue.Count) {
                 var o = _queue[_queueSendPos++];
 
-                if (o is Notification)
-                    dropped.Add((Notification)o);
+                if (o is PushMessage)
+                    dropped.Add((PushMessage)o);
             }
 
             _queue.Clear();
@@ -255,7 +255,7 @@ namespace Jannesen.PushNotification
                 System.Diagnostics.Debug.WriteLine("ONERROR CALLBACK FAILED: " + err.Message);
             }
         }
-        internal                void                        ConnectionClosed(APNSLegacyPushConnection connection, List<Notification> requeueNotifications = null)
+        internal                void                        ConnectionClosed(APNSLegacyPushConnection connection, List<PushMessage> requeueNotifications = null)
         {
             lock(_lockObject) {
                 if (_connection == connection)
@@ -263,7 +263,7 @@ namespace Jannesen.PushNotification
 
                 if (requeueNotifications != null) {
                     foreach(var n in requeueNotifications) {
-                        if (n is Notification) {
+                        if (n is PushMessage) {
                             _queue.Add(n);
                         }
                     }
@@ -283,12 +283,12 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        internal        async   Task                        NotificationDropped(List<Notification> notifications, Exception err)
+        internal        async   Task                        NotificationDropped(List<PushMessage> notifications, Exception err)
         {
             if (notifications != null) {
                 foreach(var n in notifications) {
                     if (n != null)
-                        await Error(new PushNotificationException(n, "Notification to '" + n.DeviceAddress + "' dropped.", err));
+                        await Error(new PushNotificationException(n, "Notification to '" + n.DeviceToken + "' dropped.", err));
                 }
             }
         }

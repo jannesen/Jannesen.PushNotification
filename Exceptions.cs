@@ -37,20 +37,20 @@ namespace Jannesen.PushNotification
     [Serializable]
     public class PushNotificationException: Exception
     {
-        public          Notification        Notification             { get; private set; }
+        public          PushMessage        Notification             { get; private set; }
 
-        public                              PushNotificationException(Notification notification, string message): base(message)
+        public                              PushNotificationException(PushMessage notification, string message): base(message)
         {
             this.Notification = notification;
         }
-        public                              PushNotificationException(Notification notification, string message, Exception innerException): base(message, innerException)
+        public                              PushNotificationException(PushMessage notification, string message, Exception innerException): base(message, innerException)
         {
             this.Notification = notification;
         }
 
         protected                           PushNotificationException(SerializationInfo info, StreamingContext context): base(info, context)
         {
-            Notification = (Notification)info.GetValue(nameof(Notification), typeof(Notification));
+            Notification = (PushMessage)info.GetValue(nameof(Notification), typeof(PushMessage));
         }
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
         public override void                GetObjectData(SerializationInfo info, StreamingContext context)
@@ -63,7 +63,7 @@ namespace Jannesen.PushNotification
     [Serializable]
     public class PushNotificationInvalidDeviceException: PushNotificationException
     {
-        public                              PushNotificationInvalidDeviceException(Notification notification): base(notification, "Invalid device-token '" + notification.DeviceAddress + "'.")
+        public                              PushNotificationInvalidDeviceException(PushMessage notification): base(notification, "Invalid device-token '" + notification.DeviceToken + "'.")
         {
         }
 
@@ -75,7 +75,7 @@ namespace Jannesen.PushNotification
     [Serializable]
     public class PushNotificationExpiredException: PushNotificationException
     {
-        public                              PushNotificationExpiredException(Notification notification): base(notification, "Notification expired device-token '" + notification.DeviceAddress + "'.")
+        public                              PushNotificationExpiredException(PushMessage notification): base(notification, "Notification expired device-token '" + notification.DeviceToken + "'.")
         {
         }
 

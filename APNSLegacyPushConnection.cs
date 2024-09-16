@@ -23,7 +23,7 @@ namespace Jannesen.PushNotification
         private     volatile        bool                        _isAvailable;
         private                     APNSLegacyConnection        _connection;
         private                     Task                        _receiveTask;
-        private                     List<Notification>          _notifications;
+        private                     List<PushMessage>          _notifications;
         private                     Timer                       _connectionTimer;
         private readonly            object                      _lockObject;
 
@@ -55,7 +55,7 @@ namespace Jannesen.PushNotification
 
             lock(_lockObject) {
                 _isAvailable   = _connection.Connected;
-                _notifications = new List<Notification>(Config.RecyleCount);
+                _notifications = new List<PushMessage>(Config.RecyleCount);
 
                 if (_isAvailable) {
                     _receiveTask      = Task.Run(_receiveResponceAsync);
@@ -63,7 +63,7 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        public               async  Task                        SendNotificationAsync(Notification notification)
+        public               async  Task                        SendNotificationAsync(PushMessage notification)
         {
             byte[]      msg = new byte[2102];
 
@@ -85,7 +85,7 @@ namespace Jannesen.PushNotification
                 if (notification != null) {
                     // 1 DeviceToken
                     {
-                        var deviceToken = notification.DeviceAddress;
+                        var deviceToken = notification.DeviceToken;
                         if (deviceToken.Length != 64)
                             throw new FormatException("Invalid DeviceToken.");
 
@@ -168,7 +168,7 @@ namespace Jannesen.PushNotification
             }
             catch(Exception err) {
                 if (notification != null)
-                    await Service.Error(new PushNotificationException(notification, "Notification to '" + notification.DeviceAddress + "' failed. Invalid notification format.", err));
+                    await Service.Error(new PushNotificationException(notification, "Notification to '" + notification.DeviceToken + "' failed. Invalid notification format.", err));
             }
 
             try {
@@ -236,7 +236,7 @@ namespace Jannesen.PushNotification
         private     async           Task                        _receiveResponceAsync()
         {
             byte[]                  msg = null;
-            List<Notification>      notifications;
+            List<PushMessage>      notifications;
 
             try {
                 msg = await _connection.ReceiveAsync(6, true);
@@ -274,7 +274,7 @@ namespace Jannesen.PushNotification
                         if (n != null)
                             await Service.Error((msg[1] == 0x08)
                                                 ? new PushNotificationInvalidDeviceException(n)
-                                                : new PushNotificationException(n, "Submit notification to '" + n.DeviceAddress + "' failed error #" + msg[1] + "."));
+                                                : new PushNotificationException(n, "Submit notification to '" + n.DeviceToken + "' failed error #" + msg[1] + "."));
                     }
 
                     for (int i = 0 ; i <= ni && i < _notificationIdentifier ; ++i)
