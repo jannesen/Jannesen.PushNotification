@@ -1,6 +1,6 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Xml;
+using Jannesen.FileFormat.Json;
 using Jannesen.PushNotification.Library;
 
 namespace Jannesen.PushNotification
@@ -13,64 +13,16 @@ namespace Jannesen.PushNotification
         public                      int                                 RecyleCount                 { get; private set; }
         public                      int                                 RecyleTimout                { get; private set; }
 
-        public                                                          APNSLegacyConfig(bool development, string certificateFilename, string certificatePasswd, int feedbackInterval = (6*60*60*1000), int recyleCount=128, int recyleTimout=5000)
-        {
-            Development = development;
-
-            try {
-                ClientCertificate = string.IsNullOrEmpty(certificatePasswd)? new X509Certificate2(certificateFilename): new X509Certificate2(certificateFilename, certificatePasswd);
-
-                if (!ClientCertificate.HasPrivateKey)
-                    throw new InvalidOperationException("Private key missing.");
-
-                if (ClientCertificate.NotBefore > DateTime.UtcNow)
-                    throw new InvalidOperationException("Certificate is not valid.");
-
-                if (ClientCertificate.NotAfter < DateTime.UtcNow)
-                    throw new InvalidOperationException("Certificate is expired.");
-            }
-            catch(Exception err) {
-                throw new PushNotificationConfigException("Failed to load client certificate '" + certificateFilename + "'.", err);
-            }
-
-            FeedbackInterval = feedbackInterval;
-            RecyleCount      = recyleCount;
-            RecyleTimout     = recyleTimout;
-        }
-        public                                                          APNSLegacyConfig(bool development, byte[] certificateData, string certificatePasswd, int feedbackInterval = (6*60*60*1000), int recyleCount=128, int recyleTimout=5000)
-        {
-            Development = development;
-
-            try {
-                ClientCertificate = string.IsNullOrEmpty(certificatePasswd)? new X509Certificate2(certificateData): new X509Certificate2(certificateData, certificatePasswd);
-
-                if (!ClientCertificate.HasPrivateKey)
-                    throw new InvalidOperationException("Private key missing.");
-
-                if (ClientCertificate.NotBefore > DateTime.UtcNow)
-                    throw new InvalidOperationException("Certificate is not valid.");
-
-                if (ClientCertificate.NotAfter < DateTime.UtcNow)
-                    throw new InvalidOperationException("Certificate is expired.");
-            }
-            catch(Exception err) {
-                throw new PushNotificationConfigException("Failed to load client certificate.", err);
-            }
-
-            FeedbackInterval = feedbackInterval;
-            RecyleCount      = recyleCount;
-            RecyleTimout     = recyleTimout;
-        }
-        public                                                          APNSLegacyConfig(XmlElement config)
+        public                                                          APNSLegacyConfig(JsonObject config)
         {
             if (config is null) throw new ArgumentNullException(nameof(config));
 
             try {
-                Development      = config.GetAttributeBool("development", false);
-                ClientCertificate = _loadCertificate(config.GetAttributeString("certificate"));
-                FeedbackInterval = config.GetAttributeInt("feedback-interval", 0,    24) * 3600000;
-                RecyleCount      = config.GetAttributeInt("recyle-count",  1, 1024, 128);
-                RecyleTimout     = config.GetAttributeInt("recyle-timout", 1,   30,   5) * 1000;
+                Development      = config.GetValueBoolean("development", false);
+                ClientCertificate = _loadCertificate(config.GetValueString("certificate"));
+                FeedbackInterval = config.GetValueInt("feedback-interval", 0,   24,   0) * 3600000;
+                RecyleCount      = config.GetValueInt("recyle-count",      1, 1024, 128);
+                RecyleTimout     = config.GetValueInt("recyle-timout",     1,   30,   5) * 1000;
             }
             catch(Exception err) {
                 throw new PushNotificationConfigException("Parsing Apple configuration failed.", err);
