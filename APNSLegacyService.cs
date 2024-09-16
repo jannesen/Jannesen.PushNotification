@@ -194,7 +194,7 @@ namespace Jannesen.PushNotification
         }
         private                 List<Notification>          _dropQueue()
         {
-            List<Notification>      dropped = new List<Notification>();
+            var dropped = new List<Notification>();
 
             while (_queueSendPos < _queue.Count) {
                 var o = _queue[_queueSendPos++];
@@ -216,7 +216,7 @@ namespace Jannesen.PushNotification
         }
         private         async   Task                        _closeConnection()
         {
-            APNSLegacyPushConnection   connection;
+            APNSLegacyPushConnection    connection;
 
             lock(_lockObject) {
                 connection = _connection;
@@ -263,12 +263,14 @@ namespace Jannesen.PushNotification
 
                 if (requeueNotifications != null) {
                     foreach(var n in requeueNotifications) {
-                        if (n is Notification)
+                        if (n is Notification) {
                             _queue.Add(n);
+                        }
                     }
 
-                    if (!_shutdown && _queue.Count > 0)
+                    if (!_shutdown && _queue.Count > 0) {
                         _startWorker();
+                    }
                 }
             }
         }

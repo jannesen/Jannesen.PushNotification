@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jannesen.FileFormat.Json;
 
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/BinaryProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH13-SW1
 
@@ -16,8 +12,6 @@ namespace Jannesen.PushNotification
 {
     internal sealed class APNSLegacyConnection: IDisposable
     {
-
-
         private readonly            TcpClient                   _tcpClient;
         private                     SslStream                   _sslStream;
         private readonly            object                      _lockObject;
@@ -52,7 +46,7 @@ namespace Jannesen.PushNotification
             }
         }
 
-        public              async   Task                        Connect(string hostname, int port, X509Certificate2 clientCertificate, int connectTimeout)
+        public              async   Task                        ConnectAsync(string hostname, int port, X509Certificate2 clientCertificate, int connectTimeout)
         {
             Exception       timeoutError = null;
 
@@ -103,7 +97,7 @@ namespace Jannesen.PushNotification
                 Dispose();
 
                 if (err is ObjectDisposedException || err is NullReferenceException)
-                    err = timeoutError ?? new Exception("Connect aborted.");
+                    err = timeoutError ?? new Exception("ConnectAsync aborted.");
 
                 throw err;
             }
@@ -111,7 +105,7 @@ namespace Jannesen.PushNotification
             if (timeoutError != null)
                 throw timeoutError;
         }
-        public              async   Task<byte[]>                Receive(int length, bool allowEof)
+        public              async   Task<byte[]>                ReceiveAsync(int length, bool allowEof)
         {
             byte[]  msg = new byte[length];
             int     sz  = 0;
@@ -137,7 +131,7 @@ namespace Jannesen.PushNotification
 
             throw new SystemException("Incomplete data received.");
         }
-        public                      Task                        Send(byte[] msg, int length)
+        public                      Task                        SendAsync(byte[] msg, int length)
         {
 #if DEBUG
             System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: SEND " + _hexDump(msg, length));

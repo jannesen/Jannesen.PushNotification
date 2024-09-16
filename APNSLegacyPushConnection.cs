@@ -13,25 +13,15 @@ namespace Jannesen.PushNotification
 {
     internal sealed class APNSLegacyPushConnection: IDisposable
     {
-        public      readonly        APNSLegacyService           Service;
-        public      readonly        APNSLegacyConfig            Config;
+        public  readonly            APNSLegacyService           Service;
+        public  readonly            APNSLegacyConfig            Config;
 
-        public                      bool                        isAvailable
-        {
-            get {
-                return _isAvailable;
-            }
-        }
-        public                      bool                        needsRecyle
-        {
-            get {
-                return _notificationIdentifier >= Config.RecyleCount;
-            }
-        }
+        public                      bool                        isAvailable     => _isAvailable;
+        public                      bool                        needsRecyle     => _notificationIdentifier >= Config.RecyleCount;
 
         private                     int                         _notificationIdentifier;
         private     volatile        bool                        _isAvailable;
-        private                     APNSLegacyConnection              _connection;
+        private                     APNSLegacyConnection        _connection;
         private                     Task                        _receiveTask;
         private                     List<Notification>          _notifications;
         private                     Timer                       _connectionTimer;
@@ -57,7 +47,7 @@ namespace Jannesen.PushNotification
             string hostname = Config.Development ? "gateway.sandbox.push.apple.com" : "gateway.push.apple.com";
 
             try {
-                await _connection.Connect(hostname, 2195, Config.ClientCertificate, 30 * 1000);
+                await _connection.ConnectAsync(hostname, 2195, Config.ClientCertificate, 30 * 1000);
             }
             catch(Exception err) {
                 throw new PushNotificationConnectionException("connect(" + hostname + "): failed.", err);
@@ -182,7 +172,7 @@ namespace Jannesen.PushNotification
             }
 
             try {
-                await _connection.Send(msg, pos);
+                await _connection.SendAsync(msg, pos);
             }
             catch(Exception err) {
                 Dispose();
@@ -208,15 +198,17 @@ namespace Jannesen.PushNotification
             await SendNotificationAsync(null);
 
             try {
-                using (CancellationTokenSource cts = new CancellationTokenSource(15000))
+                using (CancellationTokenSource cts = new CancellationTokenSource(15000)) {
                     await Task.WhenAny(_receiveTask, Task.Delay(-1, cts.Token));
+                }
             }
             catch(TaskCanceledException) {
             }
 
             lock(_lockObject) {
-                if (_connection == null)
+                if (_connection == null) {
                     return;
+                }
             }
 
             _close();
@@ -247,7 +239,7 @@ namespace Jannesen.PushNotification
             List<Notification>      notifications;
 
             try {
-                msg = await _connection.Receive(6, true);
+                msg = await _connection.ReceiveAsync(6, true);
 
                 lock(_lockObject) {
                     notifications = _notifications;
@@ -267,7 +259,7 @@ namespace Jannesen.PushNotification
                 }
 
                 if (connected)
-                    await Service.Error(new PushNotificationServiceException("Receive response from APNS failed.", err));
+                    await Service.Error(new PushNotificationServiceException("ReceiveAsync response from APNS failed.", err));
             }
 
             if (msg != null && msg[0] == 0x08) {

@@ -1,12 +1,11 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Xml;
 using Jannesen.PushNotification.Library;
 
 namespace Jannesen.PushNotification
 {
-    public class APNSLegacyConfig
+    public sealed class APNSLegacyConfig: IDisposable
     {
         public                      bool                                Development                 { get; private set; }
         public                      X509Certificate2                    ClientCertificate           { get; private set; }
@@ -77,10 +76,9 @@ namespace Jannesen.PushNotification
                 throw new PushNotificationConfigException("Parsing Apple configuration failed.", err);
             }
         }
-
-        public                      APNSLegacyService                   PushService()
+        public                      void                                Dispose()
         {
-            return new APNSLegacyService(this);
+            ClientCertificate?.Dispose();
         }
 
         public      override        string                              ToString()
