@@ -5,6 +5,6 @@ namespace Jannesen.PushNotification
 {
     public abstract class ServiceConfig
     {
-        internal    abstract    Task<Internal.ServiceConnection>    GetNewConnection(PushService service);
+        internal    abstract    Task<Internal.ServiceConnection>    GetNewConnection(APNSLegacyService service);
     }
 }

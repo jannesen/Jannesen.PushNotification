@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml;
@@ -6,7 +6,7 @@ using Jannesen.PushNotification.Library;
 
 namespace Jannesen.PushNotification
 {
-    public class AppleConfig: ServiceConfig
+    public class APNSLegacyConfig: ServiceConfig
     {
         public                      bool                                Development                 { get; private set; }
         public                      X509Certificate2                    ClientCertificate           { get; private set; }
@@ -14,7 +14,7 @@ namespace Jannesen.PushNotification
         public                      int                                 RecyleCount                 { get; private set; }
         public                      int                                 RecyleTimout                { get; private set; }
 
-        public                                                          AppleConfig(bool development, string certificateFilename, string certificatePasswd, int feedbackInterval = (6*60*60*1000), int recyleCount=128, int recyleTimout=5000)
+        public                                                          APNSLegacyConfig(bool development, string certificateFilename, string certificatePasswd, int feedbackInterval = (6*60*60*1000), int recyleCount=128, int recyleTimout=5000)
         {
             Development = development;
 
@@ -38,7 +38,7 @@ namespace Jannesen.PushNotification
             RecyleCount      = recyleCount;
             RecyleTimout     = recyleTimout;
         }
-        public                                                          AppleConfig(bool development, byte[] certificateData, string certificatePasswd, int feedbackInterval = (6*60*60*1000), int recyleCount=128, int recyleTimout=5000)
+        public                                                          APNSLegacyConfig(bool development, byte[] certificateData, string certificatePasswd, int feedbackInterval = (6*60*60*1000), int recyleCount=128, int recyleTimout=5000)
         {
             Development = development;
 
@@ -62,7 +62,7 @@ namespace Jannesen.PushNotification
             RecyleCount      = recyleCount;
             RecyleTimout     = recyleTimout;
         }
-        public                                                          AppleConfig(XmlElement config)
+        public                                                          APNSLegacyConfig(XmlElement config)
         {
             if (config is null) throw new ArgumentNullException(nameof(config));
 
@@ -78,10 +78,10 @@ namespace Jannesen.PushNotification
             }
         }
 
-        internal    override async  Task<Internal.ServiceConnection>    GetNewConnection(PushService service)
+        internal    override async  Task<Internal.ServiceConnection>    GetNewConnection(APNSLegacyService service)
         {
             try {
-                var connection = new Internal.APNSPushConnection(service, this);
+                var connection = new Internal.APNSLegacyPushConnection(service, this);
 
                 await connection.ConnectAsync();
 
@@ -92,9 +92,9 @@ namespace Jannesen.PushNotification
             }
         }
 
-        public                      PushService                         PushService()
+        public                      APNSLegacyService                         PushService()
         {
-            return new PushService(this);
+            return new APNSLegacyService(this);
         }
 
         public      override        string                              ToString()

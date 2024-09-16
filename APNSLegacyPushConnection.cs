@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -9,12 +9,12 @@ using Jannesen.PushNotification.Library;
 
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/BinaryProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH13-SW1
 
-namespace Jannesen.PushNotification.Internal
+namespace Jannesen.PushNotification
 {
-    internal sealed class APNSPushConnection: ServiceConnection
+    internal sealed class APNSLegacyPushConnection: Internal.ServiceConnection
     {
-        public      readonly        PushService                 Service;
-        public      readonly        AppleConfig                 Config;
+        public      readonly        APNSLegacyService                 Service;
+        public      readonly        APNSLegacyConfig            Config;
 
         public      override        bool                        isAvailable
         {
@@ -31,13 +31,13 @@ namespace Jannesen.PushNotification.Internal
 
         private                     int                         _notificationIdentifier;
         private     volatile        bool                        _isAvailable;
-        private                     APNSConnection              _connection;
+        private                     APNSLegacyConnection              _connection;
         private                     Task                        _receiveTask;
         private                     List<Notification>          _notifications;
         private                     Timer                       _connectionTimer;
         private readonly            object                      _lockObject;
 
-        public                                                  APNSPushConnection(PushService service, AppleConfig config)
+        public                                                  APNSLegacyPushConnection(APNSLegacyService service, APNSLegacyConfig config)
         {
             Service = service;
             Config  = config;
@@ -53,7 +53,7 @@ namespace Jannesen.PushNotification.Internal
 
         public               async  Task                        ConnectAsync()
         {
-            _connection = new APNSConnection();
+            _connection = new APNSLegacyConnection();
             string hostname = Config.Development ? "gateway.sandbox.push.apple.com" : "gateway.push.apple.com";
 
             try {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,9 +12,9 @@ using Jannesen.FileFormat.Json;
 
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/BinaryProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH13-SW1
 
-namespace Jannesen.PushNotification.Internal
+namespace Jannesen.PushNotification
 {
-    internal sealed class APNSConnection: IDisposable
+    internal sealed class APNSLegacyConnection: IDisposable
     {
 
 
@@ -29,7 +29,7 @@ namespace Jannesen.PushNotification.Internal
             }
         }
 
-        public                                                  APNSConnection()
+        public                                                  APNSLegacyConnection()
         {
             _tcpClient  = new TcpClient();
             _lockObject = new object();
@@ -37,7 +37,7 @@ namespace Jannesen.PushNotification.Internal
         public                      void                        Dispose()
         {
 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("APNSConnection: DISPOSE");
+                System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: DISPOSE");
 #endif
             lock(_lockObject) {
                 try {
@@ -68,7 +68,7 @@ namespace Jannesen.PushNotification.Internal
                                  null, connectTimeout, Timeout.Infinite))
                 {
 #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("APNSConnection: CONNECT");
+                    System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: CONNECT");
 #endif
                     await _tcpClient.ConnectAsync(hostname, port);
 
@@ -92,13 +92,13 @@ namespace Jannesen.PushNotification.Internal
                     if (!_sslStream.CanWrite)
                         throw new Exception("SSL Stream is not Writable");
 #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("APNSConnection: CONNECTED");
+                    System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: CONNECTED");
 #endif
                 }
             }
             catch(Exception err) {
 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("APNSConnection: ERROR " + err.Message);
+                System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: ERROR " + err.Message);
 #endif
                 Dispose();
 
@@ -127,7 +127,7 @@ namespace Jannesen.PushNotification.Internal
             while (sz < length);
 
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine("APNSConnection: RECV " + _hexDump(msg, length));
+            System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: RECV " + _hexDump(msg, length));
 #endif
 
             if (sz == length)
@@ -140,7 +140,7 @@ namespace Jannesen.PushNotification.Internal
         public                      Task                        Send(byte[] msg, int length)
         {
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine("APNSConnection: SEND " + _hexDump(msg, length));
+            System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: SEND " + _hexDump(msg, length));
 #endif
             return _sslStream.WriteAsync(msg, 0, length);
         }

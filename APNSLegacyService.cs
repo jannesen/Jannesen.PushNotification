@@ -6,7 +6,7 @@ using Jannesen.PushNotification.Internal;
 
 namespace Jannesen.PushNotification
 {
-    public sealed class PushService: IDisposable
+    public sealed class APNSLegacyService: IDisposable
     {
         public      delegate    Task                        ErrorCallback(Exception err);
         public      delegate    Task                        SendCallback(Notification notification);
@@ -22,7 +22,7 @@ namespace Jannesen.PushNotification
         private                 Task                        _activeWorker;
         private readonly        object                      _lockObject;
 
-        public                                              PushService(ServiceConfig config)
+        public                                              APNSLegacyService(ServiceConfig config)
         {
             Config = config;
 
