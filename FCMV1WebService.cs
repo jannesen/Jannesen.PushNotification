@@ -139,7 +139,7 @@ namespace Jannesen.PushNotification
         public                  Task<AutorizationToken>     GetAuthorizationTokenAsync(CancellationToken ct)
         {
             lock (_lockObject) {
-                if (_autorization != null && _autorization.IsCompleted && _autorization.Result.Expires > DateTime.UtcNow) {
+                if (_autorization != null && _autorization.IsCompleted && _autorization.Result.Expires < DateTime.UtcNow.AddMinutes(5)) {
                     _autorization = null;
                 }
 
