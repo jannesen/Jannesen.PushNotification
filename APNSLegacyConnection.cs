@@ -107,11 +107,11 @@ namespace Jannesen.PushNotification
         }
         public              async   Task<byte[]?>               ReceiveAsync(int length, bool allowEof)
         {
-            byte[]  msg = new byte[length];
-            int     sz  = 0;
+            var msg = new byte[length];
+            var sz  = 0;
 
             do {
-                int r = await _sslStream!.ReadAsync(new Memory<byte>(msg, sz, msg.Length - sz));
+                var r = await _sslStream!.ReadAsync(new Memory<byte>(msg, sz, msg.Length - sz));
 
                 if (r <= 0)
                     break;

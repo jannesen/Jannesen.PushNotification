@@ -75,7 +75,7 @@ namespace Jannesen.PushNotification
             }
 
             if (activeWorker != null) {
-                TaskCompletionSource<object>    tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
 
                 using (var x = cancellationToken.Register(() => { tcs.SetException(new TaskCanceledException()); })) {
                    await Task.WhenAny(activeWorker, tcs.Task);

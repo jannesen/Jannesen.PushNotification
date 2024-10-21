@@ -46,7 +46,7 @@ namespace Jannesen.PushNotification
         public               async  Task                        ConnectAsync()
         {
             _connection = new APNSLegacyConnection();
-            string hostname = Config.Development ? "gateway.sandbox.push.apple.com" : "gateway.push.apple.com";
+            var hostname = Config.Development ? "gateway.sandbox.push.apple.com" : "gateway.push.apple.com";
 
             try {
                 await _connection.ConnectAsync(hostname, 2195, Config.ClientCertificate, 30 * 1000);
@@ -67,9 +67,8 @@ namespace Jannesen.PushNotification
         }
         public               async  Task                        SendNotificationAsync(PushMessage? notification)
         {
-            byte[]      msg = new byte[2102];
-
-            int     pos = 1 + 4;
+            var msg = new byte[2102];
+            var pos = 1 + 4;
 
             try {
                 // 3 NotificationIdentifier
@@ -95,13 +94,13 @@ namespace Jannesen.PushNotification
                         msg[pos++] = 0;
                         msg[pos++] = 32;
 
-                        for (int i = 0 ; i < deviceToken.Length ; i += 2)
+                        for (var i = 0 ; i < deviceToken.Length ; i += 2)
                             msg[pos++] = (byte)(StaticLib.HexToNibble(deviceToken[i]) << 4 | StaticLib.HexToNibble(deviceToken[i + 1]));
                     }
 
                     // 2 Payload
                     {
-                        byte[]      bpayload;
+                        byte[] bpayload;
 
                         using (var x = new StringWriter()) {
                             using (var jsonWriter = new JsonWriter(x, true)) {
@@ -147,7 +146,7 @@ namespace Jannesen.PushNotification
                     }
                 }
 
-                int sz = pos - 5;
+                var sz = pos - 5;
 
                 msg[0] = 0x02;
                 msg[1] = (byte)((sz >> 24) & 0xFF);
@@ -202,7 +201,7 @@ namespace Jannesen.PushNotification
             await SendNotificationAsync(null);
 
             try {
-                using (CancellationTokenSource cts = new CancellationTokenSource(15000)) {
+                using (var cts = new CancellationTokenSource(15000)) {
                     await Task.WhenAny(_receiveTask, Task.Delay(-1, cts.Token));
                 }
             }
@@ -281,7 +280,7 @@ namespace Jannesen.PushNotification
                                                 : new PushNotificationException("Submit notification to '" + n.DeviceToken + "' failed error #" + msg[1] + ".", PushNotificationErrorReason.ServiceError, n));
                     }
 
-                    for (int i = 0 ; i <= ni && i < _notificationIdentifier ; ++i)
+                    for (var i = 0 ; i <= ni && i < _notificationIdentifier ; ++i)
                         notifications[i] = null;
                 }
 

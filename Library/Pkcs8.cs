@@ -53,7 +53,7 @@ namespace Jannesen.PushNotification.Library
 
                 public object? Decode()
                 {
-                    Tag tag = ReadTag();
+                    var tag = ReadTag();
                     switch (tag)
                     {
                         case Tag.Integer:
@@ -75,7 +75,7 @@ namespace Jannesen.PushNotification.Library
 
                 private byte[] ReadLengthPrefixedBytes()
                 {
-                    int length = ReadLength();
+                    var length = ReadLength();
                     return ReadBytes(length);
                 }
 
@@ -83,13 +83,13 @@ namespace Jannesen.PushNotification.Library
 
                 private object? ReadOctetString()
                 {
-                    byte[] bytes = ReadLengthPrefixedBytes();
+                    var bytes = ReadLengthPrefixedBytes();
                     return new Decoder(bytes).Decode();
                 }
 
                 private object? ReadNull()
                 {
-                    int length = ReadLength();
+                    var length = ReadLength();
                     if (length != 0)
                     {
                         throw new InvalidDataException("Invalid Data, Null length must be 0.");
@@ -99,13 +99,13 @@ namespace Jannesen.PushNotification.Library
 
                 private int[] ReadOid()
                 {
-                    byte[] oidBytes = ReadLengthPrefixedBytes();
-                    List<int> result = new List<int>();
-                    bool first = true;
-                    int index = 0;
+                    var oidBytes = ReadLengthPrefixedBytes();
+                    var result = new List<int>();
+                    var first = true;
+                    var index = 0;
                     while (index < oidBytes.Length)
                     {
-                        int subId = 0;
+                        var subId = 0;
                         byte b;
                         do
                         {
@@ -132,13 +132,13 @@ namespace Jannesen.PushNotification.Library
 
                 private object?[] ReadSequence()
                 {
-                    int length = ReadLength();
-                    int endOffset = _index + length;
+                    var length = ReadLength();
+                    var endOffset = _index + length;
                     if (endOffset < 0 || endOffset > _bytes.Length)
                     {
                         throw new InvalidDataException("Invalid sequence, too long.");
                     }
-                    List<object?> sequence = new List<object?>();
+                    var sequence = new List<object?>();
                     while (_index < endOffset)
                     {
                         sequence.Add(Decode());
@@ -156,7 +156,7 @@ namespace Jannesen.PushNotification.Library
                     {
                         throw new ArgumentException("Cannot read past end of buffer.");
                     }
-                    byte[] result = new byte[length];
+                    var result = new byte[length];
                     Array.Copy(_bytes, _index, result, 0, length);
                     _index += length;
                     return result;
@@ -164,8 +164,8 @@ namespace Jannesen.PushNotification.Library
 
                 private Tag ReadTag()
                 {
-                    byte b = NextByte();
-                    int tag = b & 0x1f;
+                    var b = NextByte();
+                    var tag = b & 0x1f;
                     if (tag == 0x1f)
                     {
                         // A tag value of 0x1f (31) indicates a tag value of >30 (spec section 8.1.2.4)
@@ -179,7 +179,7 @@ namespace Jannesen.PushNotification.Library
 
                 private int ReadLength()
                 {
-                    byte b0 = NextByte();
+                    var b0 = NextByte();
                     if ((b0 & 0x80) == 0)
                     {
                         return b0;
@@ -190,13 +190,13 @@ namespace Jannesen.PushNotification.Library
                         {
                             throw new InvalidDataException("Invalid length byte: 0xff");
                         }
-                        int byteCount = b0 & 0x7f;
+                        var byteCount = b0 & 0x7f;
                         if (byteCount == 0)
                         {
                             throw new NotSupportedException("Lengths in Indefinite Form not supported.");
                         }
-                        int result = 0;
-                        for (int i = 0; i < byteCount; i++)
+                        var result = 0;
+                        for (var i = 0; i < byteCount; i++)
                         {
                             if ((result & 0xff800000) != 0)
                             {
@@ -226,13 +226,12 @@ namespace Jannesen.PushNotification.Library
                 throw new ArgumentException(
                     $"PKCS8 Data must be contained within '{PrivateKeyPrefix}' and '{PrivateKeySuffix}'.", nameof(pkcs8PrivateKey));
             }
-            string base64PrivateKey =
+            var base64PrivateKey =
                 pkcs8PrivateKey.Substring(PrivateKeyPrefix.Length, pkcs8PrivateKey.Length - PrivateKeyPrefix.Length - PrivateKeySuffix.Length);
             // FromBase64String() ignores whitespace, so further Trim()ing isn't required.
-            byte[] pkcs8Bytes = Convert.FromBase64String(base64PrivateKey);
-
-            object ans1 = Asn1.Decode(pkcs8Bytes)!;
-            object[] parameters = (object[])((object[])ans1)[2];
+            var pkcs8Bytes = Convert.FromBase64String(base64PrivateKey);
+            var ans1 = Asn1.Decode(pkcs8Bytes)!;
+            var parameters = (object[])((object[])ans1)[2];
 
             var rsaParmeters = new RSAParameters
             {
@@ -251,13 +250,13 @@ namespace Jannesen.PushNotification.Library
 
         internal static byte[] TrimLeadingZeroes(byte[] bs, bool alignTo8Bytes = true)
         {
-            int zeroCount = 0;
+            var zeroCount = 0;
             while (zeroCount < bs.Length && bs[zeroCount] == 0) zeroCount += 1;
 
-            int newLength = bs.Length - zeroCount;
+            var newLength = bs.Length - zeroCount;
             if (alignTo8Bytes)
             {
-                int remainder = newLength & 0x07;
+                var remainder = newLength & 0x07;
                 if (remainder != 0)
                 {
                     newLength += 8 - remainder;
@@ -269,7 +268,7 @@ namespace Jannesen.PushNotification.Library
                 return bs;
             }
 
-            byte[] result = new byte[newLength];
+            var result = new byte[newLength];
             if (newLength < bs.Length)
             {
                 Buffer.BlockCopy(bs, bs.Length - newLength, result, 0, newLength);
