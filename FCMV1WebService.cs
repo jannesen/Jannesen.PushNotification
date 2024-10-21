@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.IO;
@@ -108,9 +108,9 @@ namespace Jannesen.PushNotification
                                     case HttpStatusCode.OK:
 #if DEBUG
                                         System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " succcess");
-#endif                      
+#endif
                                         return;
-                                    
+
                                     case HttpStatusCode.NotFound:
                                         if (jsonObject.GetValueObject("error")?.GetValueString("code") == "404") {
 #if DEBUG
@@ -165,10 +165,10 @@ namespace Jannesen.PushNotification
                                                            aud              = Config.TokenUri,
                                                            exp              = dt + 3600,
                                                            iat              = dt
-                                                      });                
+                                                      });
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, Config.TokenUri)) {
-                  httpRequestMessage.Content = new StringContent("assertion=" + assertion 
+                  httpRequestMessage.Content = new StringContent("assertion=" + assertion
                                                               + "&grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer",
                                                                  Encoding.ASCII, "application/x-www-form-urlencoded");
                 using(var httpResponse = await _httpClient.SendAsync(httpRequestMessage, ct)) {
@@ -295,7 +295,7 @@ namespace Jannesen.PushNotification
 
                     var error_description = jsonObject.GetValueStringNullable("error_description");
                     if (error_description != null)
-                        return rtn + " error_description=" + error_description;                    
+                        return rtn + " error_description=" + error_description;
                 }
             }
             catch(Exception) {

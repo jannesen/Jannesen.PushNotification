@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Security.Cryptography.X509Certificates;
 using Jannesen.FileFormat.Json;
 using Jannesen.PushNotification.Library;

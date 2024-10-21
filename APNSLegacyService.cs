@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,7 +74,7 @@ namespace Jannesen.PushNotification
                 activeWorker = _activeWorker;
             }
 
-            if (activeWorker != null) { 
+            if (activeWorker != null) {
                 TaskCompletionSource<object>    tcs = new TaskCompletionSource<object>();
 
                 using (var x = cancellationToken.Register(() => { tcs.SetException(new TaskCanceledException()); })) {
@@ -135,7 +135,7 @@ namespace Jannesen.PushNotification
 
                                 await connection.SendNotificationAsync((PushMessage)msg);
 
-                                if (connection.needsRecyle && _connection == connection) { 
+                                if (connection.needsRecyle && _connection == connection) {
                                     await _closeConnection();
                                 }
                             }

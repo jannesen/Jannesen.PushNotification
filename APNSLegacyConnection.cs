@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
@@ -148,7 +148,7 @@ namespace Jannesen.PushNotification
             for (int i = 0 ; i < length ; ++i) {
                 var b = msg[i];
 
-                if (i > 0) { 
+                if (i > 0) {
                     s.Append(' ');
                 }
 

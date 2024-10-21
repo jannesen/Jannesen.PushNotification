@@ -1,4 +1,4 @@
-﻿# Jannesen.PushNotifications
+# Jannesen.PushNotifications
 
 Library fo sending push notifications to iOS (using APN) and Android (using firebase).
 
