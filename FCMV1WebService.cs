@@ -47,7 +47,7 @@ namespace Jannesen.PushNotification
         private readonly            HttpClientHandler           _httpClientHandler;
         private readonly            HttpClient                  _httpClient;
         private readonly            JWTEncoder                  _jwtEncoder;
-        private                     Task<AutorizationToken>     _autorization;
+        private                     Task<AutorizationToken>?    _autorization;
         private readonly            object                      _lockObject;
 
         public                                                  FCMV1WebService(FCMV1Config config)
@@ -214,7 +214,7 @@ namespace Jannesen.PushNotification
 
                                 foreach (var p in notification.Payload) {
                                     if (p.Value != null) {
-                                        jsonWriter.WriteNameValue(p.Key, _formatData(p.Value));
+                                        jsonWriter.WriteNameValue(p.Key, _formatData(p.Value) ?? throw new PushNotificationException("Can't serialize " + p.Value.GetType().FullName + ".", PushNotificationErrorReason.Unknown, notification));
                                     }
                                 }
 
@@ -232,7 +232,7 @@ namespace Jannesen.PushNotification
                 return text.ToString();
             }
         }
-        private static              string                      _formatData(object value)
+        private static              string?                     _formatData(object value)
         {
             if (value is string valueString) {
                 return valueString;
@@ -247,12 +247,12 @@ namespace Jannesen.PushNotification
                 }
             }
 
-            return value.ToString();
+            return null;
         }
-        private static              string                      _getBodyJson(HttpResponseMessage httpResponse, byte[] body)
+        private static              string?                     _getBodyJson(HttpResponseMessage httpResponse, byte[] body)
         {
             try {
-                if (httpResponse.Content.Headers.ContentType.MediaType == "application/json") {
+                if (httpResponse.Content.Headers.ContentType?.MediaType == "application/json") {
                     return _charsetEncoding(httpResponse.Content.Headers.ContentType.CharSet).GetString(body);
                 }
             }
@@ -261,31 +261,33 @@ namespace Jannesen.PushNotification
 
             return null;
         }
-        private static              Encoding                    _charsetEncoding(string charset)
+        private static              Encoding                    _charsetEncoding(string? charset)
         {
-            switch(charset.ToLowerInvariant()) {
+            switch(charset?.ToLowerInvariant()) {
             case "utf8":    return Encoding.UTF8;
             case null:      return Encoding.ASCII;
             default:        return Encoding.GetEncoding(charset);
         }
     }
-        private static              string                      _getResponseErrorMessage(HttpStatusCode statusCode, string sjson)
+        private static              string                      _getResponseErrorMessage(HttpStatusCode statusCode, string? sjson)
         {
             var rtn = "status=" + statusCode;
 
             try {
-                var o = JsonReader.ParseString(sjson);
-                if (o is JsonObject jsonObject) {
-                    var error = jsonObject.GetValueObject("error");
-                    if (error != null) {
-                        var message = error.GetValueStringNullable("message");
-                        if (message != null)
-                            return rtn + " message=" + message;
-                    }
+                if (sjson != null) {
+                    var o = JsonReader.ParseString(sjson);
+                    if (o is JsonObject jsonObject) {
+                        var error = jsonObject.GetValueObject("error");
+                        if (error != null) {
+                            var message = error.GetValueStringNullable("message");
+                            if (message != null)
+                                return rtn + " message=" + message;
+                        }
 
-                    var error_description = jsonObject.GetValueStringNullable("error_description");
-                    if (error_description != null)
-                        return rtn + " error_description=" + error_description;
+                        var error_description = jsonObject.GetValueStringNullable("error_description");
+                        if (error_description != null)
+                            return rtn + " error_description=" + error_description;
+                    }
                 }
             }
             catch(Exception) {

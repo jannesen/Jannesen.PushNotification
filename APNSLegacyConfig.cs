@@ -40,7 +40,7 @@ namespace Jannesen.PushNotification
 
         private     static          X509Certificate2                    _loadCertificate(string certificateName)
         {
-            X509Certificate2 foundCert = null;
+            X509Certificate2? foundCert = null;
 
             using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine)) {
                 try {

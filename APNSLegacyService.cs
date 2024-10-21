@@ -23,14 +23,14 @@ namespace Jannesen.PushNotification
         }
 
         public                  APNSLegacyConfig            Config                  { get; private set; }
-        public                  ErrorCallback               OnError;
-        public                  SendCallback                OnSend;
+        public                  ErrorCallback?              OnError;
+        public                  SendCallback?               OnSend;
 
         private readonly        List<object>                _queue;
         private                 int                         _queueSendPos;
-        private                 APNSLegacyPushConnection    _connection;
+        private                 APNSLegacyPushConnection?   _connection;
         private                 bool                        _shutdown;
-        private                 Task                        _activeWorker;
+        private                 Task?                       _activeWorker;
         private readonly        object                      _lockObject;
 
         public                                              APNSLegacyService(APNSLegacyConfig config)
@@ -45,7 +45,7 @@ namespace Jannesen.PushNotification
         }
         public                  void                        Dispose()
         {
-            APNSLegacyPushConnection    connection;
+            APNSLegacyPushConnection?  connection;
 
             lock(_lockObject) {
                 connection = _connection;
@@ -68,7 +68,7 @@ namespace Jannesen.PushNotification
         }
         public          async   Task                        WaitIdle(CancellationToken cancellationToken)
         {
-            Task                    activeWorker;
+            Task? activeWorker;
 
             lock(_lockObject) {
                 activeWorker = _activeWorker;
@@ -84,8 +84,8 @@ namespace Jannesen.PushNotification
         }
         public          async   Task                        ShutdownAsync()
         {
-            List<PushMessage>       dropped;
-            Task                    activeWorker;
+            List<PushMessage?>  dropped;
+            Task?               activeWorker;
 
             lock(_lockObject) {
                 _shutdown = true;
@@ -107,7 +107,7 @@ namespace Jannesen.PushNotification
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine(Config.ToString() + ": WorkerTask started.");
 #endif
-                object  msg;
+                object?  msg;
 
                 while ((msg = _getNextMessage()) != null) {
                     try {
@@ -159,7 +159,7 @@ namespace Jannesen.PushNotification
                 await Error(new PushNotificationServiceException("WorkerTask crashed!", err));
             }
         }
-        private                 object                      _getNextMessage()
+        private                 object?                     _getNextMessage()
         {
             lock (_lockObject) {
                 while (_queueSendPos < _queue.Count) {
@@ -186,15 +186,18 @@ namespace Jannesen.PushNotification
         private         async   Task                        _send(PushMessage notification)
         {
             try {
-                await OnSend?.Invoke(notification);
+                var onSend = OnSend;
+                if (onSend != null) {
+                    await onSend.Invoke(notification);
+                }
             }
             catch(Exception err) {
                 System.Diagnostics.Debug.WriteLine("SEND CALLBACK FAILED: " + err.Message);
             }
         }
-        private                 List<PushMessage>           _dropQueue()
+        private                 List<PushMessage?>          _dropQueue()
         {
-            var dropped = new List<PushMessage>();
+            var dropped = new List<PushMessage?>();
 
             while (_queueSendPos < _queue.Count) {
                 var o = _queue[_queueSendPos++];
@@ -216,7 +219,7 @@ namespace Jannesen.PushNotification
         }
         private         async   Task                        _closeConnection()
         {
-            APNSLegacyPushConnection    connection;
+            APNSLegacyPushConnection? connection;
 
             lock(_lockObject) {
                 connection = _connection;
@@ -249,13 +252,16 @@ namespace Jannesen.PushNotification
             }
 #endif
             try {
-                await OnError?.Invoke(error);
+                var onError = OnError;
+                if (onError != null) {
+                    await onError.Invoke(error);
+                }
             }
             catch(Exception err) {
                 System.Diagnostics.Debug.WriteLine("ONERROR CALLBACK FAILED: " + err.Message);
             }
         }
-        internal                void                        ConnectionClosed(APNSLegacyPushConnection connection, List<PushMessage> requeueNotifications = null)
+        internal                void                        ConnectionClosed(APNSLegacyPushConnection connection, List<PushMessage?>? requeueNotifications = null)
         {
             lock(_lockObject) {
                 if (_connection == connection)
@@ -283,7 +289,7 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        internal        async   Task                        NotificationDropped(List<PushMessage> notifications, Exception err)
+        internal        async   Task                        NotificationDropped(List<PushMessage?> notifications, Exception err)
         {
             if (notifications != null) {
                 foreach(var n in notifications) {

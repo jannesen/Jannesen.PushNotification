@@ -51,7 +51,7 @@ namespace Jannesen.PushNotification.Library
                 private readonly byte[] _bytes;
                 private int _index;
 
-                public object Decode()
+                public object? Decode()
                 {
                     Tag tag = ReadTag();
                     switch (tag)
@@ -81,13 +81,13 @@ namespace Jannesen.PushNotification.Library
 
                 private byte[] ReadInteger() => ReadLengthPrefixedBytes();
 
-                private object ReadOctetString()
+                private object? ReadOctetString()
                 {
                     byte[] bytes = ReadLengthPrefixedBytes();
                     return new Decoder(bytes).Decode();
                 }
 
-                private object ReadNull()
+                private object? ReadNull()
                 {
                     int length = ReadLength();
                     if (length != 0)
@@ -130,7 +130,7 @@ namespace Jannesen.PushNotification.Library
                     return result.ToArray();
                 }
 
-                private object[] ReadSequence()
+                private object?[] ReadSequence()
                 {
                     int length = ReadLength();
                     int endOffset = _index + length;
@@ -138,7 +138,7 @@ namespace Jannesen.PushNotification.Library
                     {
                         throw new InvalidDataException("Invalid sequence, too long.");
                     }
-                    List<object> sequence = new List<object>();
+                    List<object?> sequence = new List<object?>();
                     while (_index < endOffset)
                     {
                         sequence.Add(Decode());
@@ -210,7 +210,7 @@ namespace Jannesen.PushNotification.Library
 
             }
 
-            public static object Decode(byte[] bs) => new Decoder(bs).Decode();
+            public static object? Decode(byte[] bs) => new Decoder(bs).Decode();
 
         }
 
@@ -231,7 +231,7 @@ namespace Jannesen.PushNotification.Library
             // FromBase64String() ignores whitespace, so further Trim()ing isn't required.
             byte[] pkcs8Bytes = Convert.FromBase64String(base64PrivateKey);
 
-            object ans1 = Asn1.Decode(pkcs8Bytes);
+            object ans1 = Asn1.Decode(pkcs8Bytes)!;
             object[] parameters = (object[])((object[])ans1)[2];
 
             var rsaParmeters = new RSAParameters

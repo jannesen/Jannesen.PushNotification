@@ -16,7 +16,7 @@ namespace Jannesen.PushNotification
     internal sealed class APNSLegacyConnection: IDisposable
     {
         private readonly            TcpClient                   _tcpClient;
-        private                     SslStream                   _sslStream;
+        private                     SslStream?                  _sslStream;
         private readonly            object                      _lockObject;
 
         public                      bool                        Connected
@@ -48,10 +48,10 @@ namespace Jannesen.PushNotification
 
         public              async   Task                        ConnectAsync(string hostname, int port, X509Certificate2 clientCertificate, int connectTimeout)
         {
-            Exception       timeoutError = null;
+            Exception?  timeoutError = null;
 
             try {
-                using (new Timer((object state) => {
+                using (new Timer((object? state) => {
                                      lock(_lockObject) {
                                          if (_tcpClient != null) {
                                              timeoutError = new TimeoutException("Timeout");
@@ -105,13 +105,13 @@ namespace Jannesen.PushNotification
             if (timeoutError != null)
                 throw timeoutError;
         }
-        public              async   Task<byte[]>                ReceiveAsync(int length, bool allowEof)
+        public              async   Task<byte[]?>               ReceiveAsync(int length, bool allowEof)
         {
             byte[]  msg = new byte[length];
             int     sz  = 0;
 
             do {
-                int r = await _sslStream.ReadAsync(new Memory<byte>(msg, sz, msg.Length - sz));
+                int r = await _sslStream!.ReadAsync(new Memory<byte>(msg, sz, msg.Length - sz));
 
                 if (r <= 0)
                     break;
@@ -136,7 +136,7 @@ namespace Jannesen.PushNotification
 #if DEBUG
             System.Diagnostics.Debug.WriteLine("APNSLegacyConnection: SEND " + _hexDump(msg, length));
 #endif
-            return _sslStream.WriteAsync(msg, 0, length);
+            return _sslStream!.WriteAsync(msg, 0, length);
         }
 
 #if DEBUG

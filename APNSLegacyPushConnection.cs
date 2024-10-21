@@ -23,10 +23,10 @@ namespace Jannesen.PushNotification
 
         private                     int                         _notificationIdentifier;
         private     volatile        bool                        _isAvailable;
-        private                     APNSLegacyConnection        _connection;
-        private                     Task                        _receiveTask;
-        private                     List<PushMessage>          _notifications;
-        private                     Timer                       _connectionTimer;
+        private                     APNSLegacyConnection?       _connection;
+        private                     Task?                       _receiveTask;
+        private                     List<PushMessage?>?         _notifications;
+        private                     Timer?                      _connectionTimer;
         private readonly            object                      _lockObject;
 
         public                                                  APNSLegacyPushConnection(APNSLegacyService service, APNSLegacyConfig config)
@@ -57,7 +57,7 @@ namespace Jannesen.PushNotification
 
             lock(_lockObject) {
                 _isAvailable   = _connection.Connected;
-                _notifications = new List<PushMessage>(Config.RecyleCount);
+                _notifications = new List<PushMessage?>(Config.RecyleCount);
 
                 if (_isAvailable) {
                     _receiveTask      = Task.Run(_receiveResponceAsync);
@@ -65,7 +65,7 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        public               async  Task                        SendNotificationAsync(PushMessage notification)
+        public               async  Task                        SendNotificationAsync(PushMessage? notification)
         {
             byte[]      msg = new byte[2102];
 
@@ -176,7 +176,7 @@ namespace Jannesen.PushNotification
             }
 
             try {
-                await _connection.SendAsync(msg, pos);
+                await _connection!.SendAsync(msg, pos);
             }
             catch(Exception err) {
                 Dispose();
@@ -239,11 +239,11 @@ namespace Jannesen.PushNotification
         }
         private     async           Task                        _receiveResponceAsync()
         {
-            byte[]                  msg = null;
-            List<PushMessage>      notifications;
+            byte[]?                 msg = null;
+            List<PushMessage?>?     notifications;
 
             try {
-                msg = await _connection.ReceiveAsync(6, true);
+                msg = await _connection!.ReceiveAsync(6, true);
 
                 lock(_lockObject) {
                     notifications = _notifications;
@@ -266,7 +266,7 @@ namespace Jannesen.PushNotification
                     await Service.Error(new PushNotificationServiceException("ReceiveAsync response from APNS failed.", err));
             }
 
-            if (msg != null && msg[0] == 0x08) {
+            if (notifications != null && msg != null && msg[0] == 0x08) {
                 var ni = (msg[2] << 24) | (msg[3] << 16) | (msg[4] << 8) | (msg[5]);
 
                 if (ni >= 0 && ni == _notificationIdentifier - 1 && notifications[ni] == null)
@@ -288,11 +288,14 @@ namespace Jannesen.PushNotification
                 Service.ConnectionClosed(this, notifications);
             }
             else {
-                await Service.NotificationDropped(notifications, new Exception("Connection dropped by APSN."));
+                if (notifications != null) {
+                    await Service.NotificationDropped(notifications, new Exception("Connection dropped by APSN."));
+                }
+
                 Service.ConnectionClosed(this);
             }
         }
-        private                     void                        _connectionTimer_callback(object state)
+        private                     void                        _connectionTimer_callback(object? state)
         {
             Service.RecyleConnection(this);
         }
