@@ -243,9 +243,9 @@ namespace Jannesen.PushNotification
         {
 #if DEBUG
             {
-                string  msg = Config.ToString() + ": ERROR:";
+                var  msg = Config.ToString() + ": ERROR:";
 
-                for (Exception e = error; e != null ; e = e.InnerException)
+                for (var e = (Exception?)error; e != null ; e = e.InnerException)
                     msg += " " + e.Message;
 
                 System.Diagnostics.Debug.WriteLine(msg);
