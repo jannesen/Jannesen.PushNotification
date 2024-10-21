@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+#pragma warning disable CA5398 // Avoid hardcoding SslProtocols 'Tls12' to ensure your application remains secure in the future. Use 'None' to let the Operating System choose a version.
+#pragma warning disable CA2201 // Do not raise reserved exception types
+
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/BinaryProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH13-SW1
 
 namespace Jannesen.PushNotification

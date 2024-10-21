@@ -9,6 +9,8 @@ using Jannesen.PushNotification.Library;
 
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/BinaryProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH13-SW1
 
+#pragma warning disable CA2201 // Do not raise reserved exception types
+
 namespace Jannesen.PushNotification
 {
     internal sealed class APNSLegacyPushConnection: IDisposable
@@ -102,7 +104,9 @@ namespace Jannesen.PushNotification
                         byte[]      bpayload;
 
                         using (var x = new StringWriter()) {
-                            (new JsonWriter(x)).WriteValue(notification.Payload);
+                            using (var jsonWriter = new JsonWriter(x, true)) {
+                                jsonWriter.WriteValue(notification.Payload);
+                            }
                             bpayload = Encoding.UTF8.GetBytes(x.ToString());
                         }
 

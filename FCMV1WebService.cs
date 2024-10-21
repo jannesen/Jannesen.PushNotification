@@ -52,6 +52,8 @@ namespace Jannesen.PushNotification
 
         public                                              FCMV1WebService(FCMV1Config config)
         {
+            ArgumentNullException.ThrowIfNull(config);
+
             Config             = config;
             _jwtEncoder        = new JWTEncoder(config.PrivateKeyId, config.PrivateKey);
             _httpClientHandler = new HttpClientHandler() {
