@@ -46,10 +46,7 @@ namespace Jannesen.PushNotification.Library
 
         private                 byte[]                      _getJwtSignatute(byte[] data)
         {
-            using (var hashAlg = SHA256.Create()) {
-                byte[] assertionHash = hashAlg.ComputeHash(data);
-                return _key.SignHash(assertionHash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            }
+            return _key.SignHash(SHA256.HashData(data), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
         private     static      string                      _jwtEncode(string data)
         {

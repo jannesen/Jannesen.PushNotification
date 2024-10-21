@@ -3,18 +3,32 @@
         <RootNamespace>Jannesen.PushNotification</RootNamespace>
         <AssemblyName>Jannesen.PushNotification</AssemblyName>
         <OutputType>Library</OutputType>
-        <TargetFrameworks>net48</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <Platforms>AnyCPU</Platforms>
+
+        <Nullable>disable</Nullable>
+
+        <IsTrimmable>True</IsTrimmable>
+        <IsAotCompatible>True</IsAotCompatible>
+        <SignAssembly>True</SignAssembly>
+        <AssemblyOriginatorKeyFile>Jannesen.PushNotification.snk</AssemblyOriginatorKeyFile>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AutoGenerateBindingRedirects>False</AutoGenerateBindingRedirects>
+
+        <Company>Jannesen B.V.</Company>
+        <Version>1.10.00.001</Version>
+        <Authors>Peter Jannesen</Authors>
+        <RepositoryUrl>https://github.com/jannesen/Jannesen.PushNotification.Pdf</RepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <WarningLevel>4</WarningLevel>
-        <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>Jannesen.PushNotification.snk</AssemblyOriginatorKeyFile>
-        <Company>Jannesen B.V.</Company>
-        <Version>1.10.00.001</Version>
-        <RepositoryUrl>https://github.com/jannesen/Jannesen.PushNotification.Pdf</RepositoryUrl>
-        <Authors>Peter Jannesen</Authors>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -24,7 +38,6 @@
         <OutputPath>bin\Debug\</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
     </PropertyGroup>
-
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <DebugType>pdbonly</DebugType>
@@ -32,13 +45,6 @@
         <OutputPath>bin\Release\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
-
-    <ItemGroup>
-        <Reference Include="System" />
-        <Reference Include="System.Net" />
-        <Reference Include="System.Net.Http" />
-        <Reference Include="System.Web" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Jannesen.FileFormat.Json\Jannesen.FileFormat.Json.csproj">
@@ -49,4 +55,5 @@
     <ItemGroup>
       <None Remove=".git" />
     </ItemGroup>
+    
 </Project>

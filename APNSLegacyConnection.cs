@@ -111,7 +111,7 @@ namespace Jannesen.PushNotification
             int     sz  = 0;
 
             do {
-                int r = await _sslStream.ReadAsync(msg, sz, msg.Length - sz);
+                int r = await _sslStream.ReadAsync(new Memory<byte>(msg, sz, msg.Length - sz));
 
                 if (r <= 0)
                     break;

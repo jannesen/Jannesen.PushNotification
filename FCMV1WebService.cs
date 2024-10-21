@@ -92,41 +92,35 @@ namespace Jannesen.PushNotification
                 httpRequestMessage.Content = new StringContent(spm, Encoding.UTF8, "application/json");
 
                 using(var httpResponse = await _httpClient.SendAsync(httpRequestMessage, ct)) {
-                    TaskCompletionSource<object>    tcs = new TaskCompletionSource<object>();
+                    var body = await httpResponse.Content.ReadAsByteArrayAsync(ct);
 
-                    using (ct.Register(() => { tcs.SetException(new TaskCanceledException()); })) {
-                        var bodyTask = httpResponse.Content.ReadAsByteArrayAsync();
+                    var sjson = _getBodyJson(httpResponse, body);
 
-                        await Task.WhenAny(bodyTask, tcs.Task);
-
-                        var sjson = _getBodyJson(httpResponse, await bodyTask);
-
-                        if ((httpResponse.StatusCode == HttpStatusCode.OK || httpResponse.StatusCode == HttpStatusCode.NotFound) && sjson != null) {
-                            try {
-                                if (JsonReader.ParseString(sjson) is JsonObject jsonObject) {
-                                    switch(httpResponse.StatusCode) {
-                                    case HttpStatusCode.OK:
+                    if ((httpResponse.StatusCode == HttpStatusCode.OK || httpResponse.StatusCode == HttpStatusCode.NotFound) && sjson != null) {
+                        try {
+                            if (JsonReader.ParseString(sjson) is JsonObject jsonObject) {
+                                switch(httpResponse.StatusCode) {
+                                case HttpStatusCode.OK:
 #if DEBUG
-                                        System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " succcess");
+                                    System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " succcess");
 #endif
-                                        return;
+                                    return;
 
-                                    case HttpStatusCode.NotFound:
-                                        if (jsonObject.GetValueObject("error")?.GetValueString("code") == "404") {
+                                case HttpStatusCode.NotFound:
+                                    if (jsonObject.GetValueObject("error")?.GetValueString("code") == "404") {
 #if DEBUG
-                                            System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " not found");
+                                        System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " not found");
 #endif
-                                            throw new PushNotificationException("Unknown device.", PushNotificationErrorReason.DeviceNotFound, notification);
-                                        }
-                                        break;
+                                        throw new PushNotificationException("Unknown device.", PushNotificationErrorReason.DeviceNotFound, notification);
                                     }
+                                    break;
                                 }
                             }
-                            catch(PushNotificationException) {
-                                throw;
-                            }
-                            catch(Exception) {
-                            }
+                        }
+                        catch(PushNotificationException) {
+                            throw;
+                        }
+                        catch(Exception) {
                         }
 
                         throw new PushNotificationException("FirebaseV1.SendPushNotification failed: " + _getResponseErrorMessage(httpResponse.StatusCode, sjson) + ".", PushNotificationErrorReason.ServiceError, notification);
@@ -172,38 +166,32 @@ namespace Jannesen.PushNotification
                                                               + "&grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer",
                                                                  Encoding.ASCII, "application/x-www-form-urlencoded");
                 using(var httpResponse = await _httpClient.SendAsync(httpRequestMessage, ct)) {
-                    TaskCompletionSource<object>    tcs = new TaskCompletionSource<object>();
+                    var body = await httpResponse.Content.ReadAsByteArrayAsync(ct);       // oops can't cancel sorry
 
-                    using (ct.Register(() => { tcs.SetException(new TaskCanceledException()); })) {
-                        var bodyTask = httpResponse.Content.ReadAsByteArrayAsync();       // oops can't cancel sorry
+                    var sjson = _getBodyJson(httpResponse, body);
 
-                        await Task.WhenAny(bodyTask, tcs.Task);
+                    if (httpResponse.StatusCode == HttpStatusCode.OK && sjson != null) {
+                        try {
+                            if (JsonReader.ParseString(sjson) is JsonObject jsonObject) {
+                                var token_type = jsonObject.GetValueString("token_type");
 
-                        var sjson = _getBodyJson(httpResponse, await bodyTask);
-
-                        if (httpResponse.StatusCode == HttpStatusCode.OK && sjson != null) {
-                            try {
-                                if (JsonReader.ParseString(sjson) is JsonObject jsonObject) {
-                                    var token_type = jsonObject.GetValueString("token_type");
-
-                                    if (token_type == "Bearer") {
+                                if (token_type == "Bearer") {
 #if DEBUG
-                                        System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: autorized");
+                                    System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: autorized");
 #endif
-                                        return new AutorizationToken(token_type + " " + jsonObject.GetValueString("access_token"),
-                                                                     StaticLib.UnixEPoch.AddTicks((dt + jsonObject.GetValueInt("expires_in")) * TimeSpan.TicksPerSecond));
-                                    }
+                                    return new AutorizationToken(token_type + " " + jsonObject.GetValueString("access_token"),
+                                                                    StaticLib.UnixEPoch.AddTicks((dt + jsonObject.GetValueInt("expires_in")) * TimeSpan.TicksPerSecond));
                                 }
                             }
-                            catch(Exception) {
-                            }
                         }
+                        catch(Exception) {
+                        }
+                    }
 
 #if DEBUG
-                        System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: failed");
+                    System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: failed");
 #endif
-                        throw new PushNotificationAuthenticationException("FirebaseV1.GetAccessToken failed: " + _getResponseErrorMessage(httpResponse.StatusCode, sjson) + ".");
-                    }
+                    throw new PushNotificationAuthenticationException("FirebaseV1.GetAccessToken failed: " + _getResponseErrorMessage(httpResponse.StatusCode, sjson) + ".");
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace Jannesen.PushNotification
 
         public                                                          APNSLegacyConfig(JsonObject config)
         {
-            if (config is null) throw new ArgumentNullException(nameof(config));
+            ArgumentNullException.ThrowIfNull(config);
 
             try {
                 Development      = config.GetValueBoolean("development", false);
@@ -57,7 +57,9 @@ namespace Jannesen.PushNotification
                                 throw new PushNotificationConfigException("Certificate '"+ certificateName + "' has no private key.");
 
                             try {
+#pragma warning disable SYSLIB0028
                                 var _ = cert.PrivateKey;
+#pragma warning restore SYSLIB0028
                             }
                             catch(Exception) {
                                 throw new PushNotificationConfigException("Certificate '"+ certificateName + "' no read-access to private key.");

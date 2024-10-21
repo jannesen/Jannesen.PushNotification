@@ -13,7 +13,7 @@ namespace Jannesen.PushNotification
 
         public                                                      FCMV1Config(JsonObject config)
         {
-            if (config is null) throw new ArgumentNullException(nameof(config));
+            ArgumentNullException.ThrowIfNull(config);
 
             try {
                 ProjectId    = config.GetValueString("project_id");
