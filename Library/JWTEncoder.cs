@@ -9,10 +9,10 @@ namespace Jannesen.PushNotification.Library
     {
         private struct JwtHeader: IJsonSerializer
         {
-            public      string      alg;
-            public      string      kid;
+            public          string      alg;
+            public          string      kid;
 
-                        void        IJsonSerializer.WriteTo(JsonWriter jsonWriter)
+                readonly    void        IJsonSerializer.WriteTo(JsonWriter jsonWriter)
             {
                 jsonWriter.WriteStartObject();
                 jsonWriter.WriteNameValue("alg", alg);

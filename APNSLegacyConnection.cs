@@ -38,11 +38,8 @@ namespace Jannesen.PushNotification
 #endif
             lock(_lockObject) {
                 try {
-                    if (_sslStream != null)
-                        _sslStream.Dispose();
-
-                    if (_tcpClient != null)
-                        _tcpClient.Dispose();
+                    _sslStream?.Dispose();
+                    _tcpClient?.Dispose();
                 }
                 catch(Exception) {
                 }

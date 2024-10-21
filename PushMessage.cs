@@ -13,11 +13,8 @@ namespace Jannesen.PushNotification
 
         public                                  PushMessage(string deviceToken, JsonObject payload, bool highPriority, DateTime expireTime)
         {
-            if (string.IsNullOrEmpty(deviceToken))
-                throw new ArgumentException("Invalid deviceToken.");
-
-            if (!(payload is JsonObject))
-                throw new ArgumentException("Invalid payload.");
+            ArgumentException.ThrowIfNullOrEmpty(deviceToken);
+            ArgumentNullException.ThrowIfNull(payload);
 
             if (expireTime.Ticks < DateTime.UtcNow.Ticks + TimeSpan.TicksPerMinute)
                 throw new ArgumentException("Invalid expireTime.");
@@ -29,11 +26,8 @@ namespace Jannesen.PushNotification
         }
         public                                  PushMessage(string deviceToken, JsonObject payload, bool highPriority, TimeSpan timeToLive)
         {
-            if (string.IsNullOrEmpty(deviceToken))
-                throw new ArgumentException("Invalid deviceToken.");
-
-            if (!(payload is JsonObject))
-                throw new ArgumentException("Invalid payload.");
+            ArgumentException.ThrowIfNullOrEmpty(deviceToken);
+            ArgumentNullException.ThrowIfNull(payload);
 
             if (timeToLive.Ticks < TimeSpan.TicksPerMinute)
                 throw new ArgumentException("Invalid timeToLive.");

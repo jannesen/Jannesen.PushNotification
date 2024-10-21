@@ -22,7 +22,7 @@ namespace Jannesen.PushNotification
             public          int             exp;
             public          int             iat;
 
-                            void            IJsonSerializer.WriteTo(JsonWriter jsonWriter)
+                readonly    void            IJsonSerializer.WriteTo(JsonWriter jsonWriter)
             {
                 jsonWriter.WriteStartObject();
                 jsonWriter.WriteNameValue("scope",              String.Join(" ", scopes));
@@ -35,22 +35,22 @@ namespace Jannesen.PushNotification
             }
         }
 
-        private     static      string[]                    JWTScopes = new string[] {
-                                                                            "https://www.googleapis.com/auth/firebase",
-                                                                            //"https://www.googleapis.com/auth/userinfo.email",
-                                                                            //"https://www.googleapis.com/auth/identitytoolkit",
-                                                                            //"https://www.googleapis.com/auth/devstorage.full_control",
-                                                                            "https://www.googleapis.com/auth/cloud-platform",
-                                                                            //"https://www.googleapis.com/auth/datastore"
-                                                                        };
-        public  readonly        FCMV1Config               Config;
-        private readonly        HttpClientHandler           _httpClientHandler;
-        private readonly        HttpClient                  _httpClient;
-        private readonly        JWTEncoder                  _jwtEncoder;
-        private                 Task<AutorizationToken>     _autorization;
-        private readonly        object                      _lockObject;
+        private static  readonly    string[]                    JWTScopes = [
+                                                                                "https://www.googleapis.com/auth/firebase",
+                                                                                //"https://www.googleapis.com/auth/userinfo.email",
+                                                                                //"https://www.googleapis.com/auth/identitytoolkit",
+                                                                                //"https://www.googleapis.com/auth/devstorage.full_control",
+                                                                                "https://www.googleapis.com/auth/cloud-platform",
+                                                                                //"https://www.googleapis.com/auth/datastore"
+                                                                            ];
+        public  readonly            FCMV1Config                 Config;
+        private readonly            HttpClientHandler           _httpClientHandler;
+        private readonly            HttpClient                  _httpClient;
+        private readonly            JWTEncoder                  _jwtEncoder;
+        private                     Task<AutorizationToken>     _autorization;
+        private readonly            object                      _lockObject;
 
-        public                                              FCMV1WebService(FCMV1Config config)
+        public                                                  FCMV1WebService(FCMV1Config config)
         {
             ArgumentNullException.ThrowIfNull(config);
 
@@ -66,7 +66,7 @@ namespace Jannesen.PushNotification
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
             _lockObject = new object();
         }
-        protected   override    void                        Dispose(bool disposing)
+        protected   override        void                        Dispose(bool disposing)
         {
             if (disposing) {
                 _jwtEncoder.Dispose();
@@ -75,11 +75,11 @@ namespace Jannesen.PushNotification
             }
         }
 
-        public  override async  Task                        InitAsync(CancellationToken ct)
+        public  override async      Task                        InitAsync(CancellationToken ct)
         {
             await GetAuthorizationTokenAsync(ct);
         }
-        public  override async  Task                        SendNotificationAsync(PushMessage notification, CancellationToken ct)
+        public  override async      Task                        SendNotificationAsync(PushMessage notification, CancellationToken ct)
         {
 #if DEBUG
             System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " begin");
@@ -132,7 +132,7 @@ namespace Jannesen.PushNotification
 
         }
 
-        public                  Task<AutorizationToken>     GetAuthorizationTokenAsync(CancellationToken ct)
+        public                      Task<AutorizationToken>     GetAuthorizationTokenAsync(CancellationToken ct)
         {
             lock (_lockObject) {
                 if (_autorization != null && _autorization.IsCompleted && _autorization.Result.Expires < DateTime.UtcNow.AddMinutes(5)) {
@@ -147,7 +147,7 @@ namespace Jannesen.PushNotification
             return _autorization;
         }
 
-        private          async  Task<AutorizationToken>     _getAuthorizationAsync(CancellationToken ct)
+        private          async      Task<AutorizationToken>     _getAuthorizationAsync(CancellationToken ct)
         {
             await Task.Yield(); // Release GetAuthorizationTokenAsync lock
 #if DEBUG
@@ -197,7 +197,7 @@ namespace Jannesen.PushNotification
                 }
             }
         }
-        private static          string                      _formatMessage(PushMessage notification)
+        private static              string                      _formatMessage(PushMessage notification)
         {
             var ttl = (notification.ExpireTime.Ticks - DateTime.UtcNow.Ticks + TimeSpan.TicksPerSecond/2) / TimeSpan.TicksPerSecond;
 
@@ -232,7 +232,7 @@ namespace Jannesen.PushNotification
                 return text.ToString();
             }
         }
-        private static          string                      _formatData(object value)
+        private static              string                      _formatData(object value)
         {
             if (value is string valueString) {
                 return valueString;
@@ -249,7 +249,7 @@ namespace Jannesen.PushNotification
 
             return value.ToString();
         }
-        private static          string                      _getBodyJson(HttpResponseMessage httpResponse, byte[] body)
+        private static              string                      _getBodyJson(HttpResponseMessage httpResponse, byte[] body)
         {
             try {
                 if (httpResponse.Content.Headers.ContentType.MediaType == "application/json") {
@@ -261,7 +261,7 @@ namespace Jannesen.PushNotification
 
             return null;
         }
-        private static          Encoding                    _charsetEncoding(string charset)
+        private static              Encoding                    _charsetEncoding(string charset)
         {
             switch(charset.ToLowerInvariant()) {
             case "utf8":    return Encoding.UTF8;
@@ -269,7 +269,7 @@ namespace Jannesen.PushNotification
             default:        return Encoding.GetEncoding(charset);
         }
     }
-        private static          string                      _getResponseErrorMessage(HttpStatusCode statusCode, string sjson)
+        private static              string                      _getResponseErrorMessage(HttpStatusCode statusCode, string sjson)
         {
             var rtn = "status=" + statusCode;
 

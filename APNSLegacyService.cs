@@ -54,9 +54,7 @@ namespace Jannesen.PushNotification
                 _queue.Clear();
             }
 
-            if (connection != null) {
-                connection.Dispose();
-            }
+            connection?.Dispose();
         }
 
         public                  void                        SendNotification(PushMessage notification)
@@ -113,7 +111,7 @@ namespace Jannesen.PushNotification
 
                 while ((msg = _getNextMessage()) != null) {
                     try {
-                        if (msg is PushMessage) {
+                        if (msg is PushMessage pushMessage) {
                             var connection = _connection;
                             if (connection == null || !connection.isAvailable) {
                                 if (connection != null) {
@@ -133,7 +131,7 @@ namespace Jannesen.PushNotification
                             }
 
                             if (connection.isAvailable) {
-                                await _send((PushMessage)msg);
+                                await _send(pushMessage);
 
                                 await connection.SendNotificationAsync((PushMessage)msg);
 
@@ -143,8 +141,8 @@ namespace Jannesen.PushNotification
                             }
                         }
 
-                        if (msg is RecyleMessage) {
-                            var sc = ((RecyleMessage)msg).Connection;
+                        if (msg is RecyleMessage recyleMessage) {
+                            var sc = recyleMessage.Connection;
                             if (sc == null || _connection == sc)
                                 await _closeConnection();
                         }
@@ -201,8 +199,8 @@ namespace Jannesen.PushNotification
             while (_queueSendPos < _queue.Count) {
                 var o = _queue[_queueSendPos++];
 
-                if (o is PushMessage)
-                    dropped.Add((PushMessage)o);
+                if (o is PushMessage pushMessage)
+                    dropped.Add(pushMessage);
             }
 
             _queue.Clear();
@@ -265,7 +263,7 @@ namespace Jannesen.PushNotification
 
                 if (requeueNotifications != null) {
                     foreach(var n in requeueNotifications) {
-                        if (n is PushMessage) {
+                        if (n != null) {
                             _queue.Add(n);
                         }
                     }

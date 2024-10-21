@@ -48,7 +48,7 @@ namespace Jannesen.PushNotification.Library
                     _index = 0;
                 }
 
-                private byte[] _bytes;
+                private readonly byte[] _bytes;
                 private int _index;
 
                 public object Decode()
