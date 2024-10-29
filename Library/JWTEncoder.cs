@@ -5,7 +5,7 @@ using Jannesen.FileFormat.Json;
 
 namespace Jannesen.PushNotification.Library
 {
-    internal sealed class JWTEncoder: IDisposable
+    internal sealed class JWTEncoder
     {
         private struct JwtHeader: IJsonSerializer
         {
@@ -25,14 +25,10 @@ namespace Jannesen.PushNotification.Library
         private readonly        string                      _keyid;
         private readonly        RSA                         _key;
 
-        public                                              JWTEncoder(string keyid, string pkcs8PrivateKey)
+        public                                              JWTEncoder(string keyid, RSA key)
         {
             _keyid = keyid;
-            _key   = RSA.Create(Pkcs8.DecodeRsaParameters(pkcs8PrivateKey));
-        }
-        public                  void                        Dispose()
-        {
-            _key.Dispose();
+            _key   = key;
         }
 
         public                  string                      CreateJwtToken(IJsonSerializer payload)

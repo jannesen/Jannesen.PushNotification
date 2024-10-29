@@ -69,7 +69,6 @@ namespace Jannesen.PushNotification
         protected   override        void                        Dispose(bool disposing)
         {
             if (disposing) {
-                _jwtEncoder.Dispose();
                 _httpClient.Dispose();
                 _httpClientHandler.Dispose();
             }

@@ -3,6 +3,16 @@ using System.Security.Cryptography.X509Certificates;
 using Jannesen.FileFormat.Json;
 using Jannesen.PushNotification.Library;
 
+/*
+ * Convert apple client pkcs to key cert
+ * 
+ * openssl pkcs12 -passin pass:<pkcs passphare> -passout pass:<passphare>  -in <pfxfile> -out 1.pem
+ * 
+ * open pem file in editor.
+ *  - remove all lines outside -----BEGIN en ---END
+ *  - join BEGIN ENCRYPTED PRIVATE KEY lines with \n and place in key
+ *  - join BEGIN CERTIFICATE lines with \n and place in cert
+ */
 namespace Jannesen.PushNotification
 {
     public sealed class APNSLegacyConfig: IDisposable
@@ -13,18 +23,18 @@ namespace Jannesen.PushNotification
         public                      int                                 RecyleCount                 { get; private set; }
         public                      int                                 RecyleTimout                { get; private set; }
 
-        public                                                          APNSLegacyConfig(JsonObject config)
+        public                                                          APNSLegacyConfig(JsonObject config, string? passphrase=null)
         {
             ArgumentNullException.ThrowIfNull(config);
 
             try {
-                Development      = config.GetValueBoolean("development", false);
-                ClientCertificate = _loadCertificate(config.GetValueString("certificate"));
-                FeedbackInterval = config.GetValueInt("feedback-interval", 0,   24,   0) * 3600000;
-                RecyleCount      = config.GetValueInt("recyle-count",      1, 1024, 128);
-                RecyleTimout     = config.GetValueInt("recyle-timout",     1,   30,   5) * 1000;
+                Development       = config.GetValueBoolean("development", false);
+                ClientCertificate =  _loadCertificate(config.GetValueObjectRequired("client-certificate"), passphrase);
+                RecyleCount       = config.GetValueInt("recyle-count",      1, 1024, 128);
+                RecyleTimout      = config.GetValueInt("recyle-timout",     1,   30,   5) * 1000;
             }
             catch(Exception err) {
+                ClientCertificate?.Dispose();
                 throw new PushNotificationConfigException("Parsing Apple configuration failed.", err);
             }
         }
@@ -38,43 +48,15 @@ namespace Jannesen.PushNotification
             return "PushNotifcation.Apple";
         }
 
-        private     static          X509Certificate2                    _loadCertificate(string certificateName)
+        private     static          X509Certificate2                    _loadCertificate(JsonObject clientCertificate, string? passphrase)
         {
-            X509Certificate2? foundCert = null;
-
-            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine)) {
-                try {
-                    store.Open(OpenFlags.ReadOnly);
-                }
-                catch(Exception err) {
-                    throw new PushNotificationConfigException("Failed to open X509Store", err);
-                }
-
-                foreach (var cert in store.Certificates) {
-                    if (cert.NotBefore < DateTime.UtcNow && cert.NotAfter > DateTime.UtcNow.AddHours(-12) && cert.Subject == certificateName) {
-                        if (foundCert == null || foundCert.NotAfter < cert.NotAfter) {
-                            if (!cert.HasPrivateKey)
-                                throw new PushNotificationConfigException("Certificate '"+ certificateName + "' has no private key.");
-
-                            try {
-#pragma warning disable SYSLIB0028
-                                var _ = cert.PrivateKey;
-#pragma warning restore SYSLIB0028
-                            }
-                            catch(Exception) {
-                                throw new PushNotificationConfigException("Certificate '"+ certificateName + "' no read-access to private key.");
-                            }
-
-                            foundCert = cert;
-                        }
-                    }
-                }
+            using (var cert = passphrase != null
+                                ? X509Certificate2.CreateFromEncryptedPem(clientCertificate.GetValueString("cert"), clientCertificate.GetValueString("key"), passphrase)
+                                : X509Certificate2.CreateFromPem(clientCertificate.GetValueString("cert"), clientCertificate.GetValueString("key"))) {
+            // Work around "ephemeral keys" error
+            // https://stackoverflow.com/questions/72096812/loading-x509certificate2-from-pem-file-results-in-no-credentials-are-available
+                return new X509Certificate2(cert.Export(X509ContentType.Pfx));
             }
-
-            if (foundCert != null)
-                return foundCert;
-
-            throw new PushNotificationConfigException("Certificate '" + certificateName + "' not found in store.");
         }
     }
 }
