@@ -80,10 +80,11 @@ namespace Jannesen.PushNotification
         }
         public  override async      Task                        SendNotificationAsync(PushMessage notification, CancellationToken ct)
         {
+            var retry = 0;
+retry:
 #if DEBUG
             System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " begin");
 #endif
-
             var spm = _formatMessage(notification);
             var at  = (await GetAuthorizationTokenAsync(ct)).Token;
 
@@ -123,12 +124,24 @@ namespace Jannesen.PushNotification
                         }
                         catch(Exception) {
                         }
-
-                        throw new PushNotificationException("FirebaseV1.SendPushNotification failed: " + _getResponseErrorMessage(httpResponse.StatusCode, sjson) + ".", PushNotificationErrorReason.ServiceError, notification);
                     }
+
+                    if (httpResponse.StatusCode == HttpStatusCode.BadGateway         ||
+                        httpResponse.StatusCode == HttpStatusCode.ServiceUnavailable ||
+                        httpResponse.StatusCode == HttpStatusCode.InternalServerError) {
+                        if (retry < 3) {
+                            try {
+                                await Task.Delay(5000 + (++retry * 2500), ct);
+                                goto retry;
+                            }
+                            catch(Exception) {
+                            }
+                        }
+                    }
+
+                    throw new PushNotificationException("FirebaseV1.SendPushNotification failed: " + _getResponseErrorMessage(httpResponse.StatusCode, sjson) + ".", PushNotificationErrorReason.ServiceError, notification);
                 }
             }
-
         }
 
         public                      Task<AutorizationToken>     GetAuthorizationTokenAsync(CancellationToken ct)
@@ -149,6 +162,9 @@ namespace Jannesen.PushNotification
         private          async      Task<AutorizationToken>     _getAuthorizationAsync(CancellationToken ct)
         {
             await Task.Yield(); // Release GetAuthorizationTokenAsync lock
+
+            var retry = 0;
+retry:
 #if DEBUG
             System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: begin");
 #endif
@@ -192,6 +208,18 @@ namespace Jannesen.PushNotification
 #if DEBUG
                     System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: failed");
 #endif
+                    if (httpResponse.StatusCode == HttpStatusCode.BadGateway ||
+                        httpResponse.StatusCode == HttpStatusCode.ServiceUnavailable) {
+                        if (retry < 3) {
+                            try {
+                                await Task.Delay(5000 + (++retry * 2500), ct);
+                                goto retry;
+                            }
+                            catch(Exception) {
+                            }
+                        }
+                    }
+
                     throw new PushNotificationAuthenticationException("FirebaseV1.GetAccessToken failed: " + _getResponseErrorMessage(httpResponse.StatusCode, sjson) + ".");
                 }
             }
