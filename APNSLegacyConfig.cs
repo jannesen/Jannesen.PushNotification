@@ -55,7 +55,7 @@ namespace Jannesen.PushNotification
                                 : X509Certificate2.CreateFromPem(clientCertificate.GetValueString("cert"), clientCertificate.GetValueString("key"))) {
             // Work around "ephemeral keys" error
             // https://stackoverflow.com/questions/72096812/loading-x509certificate2-from-pem-file-results-in-no-credentials-are-available
-                return new X509Certificate2(cert.Export(X509ContentType.Pfx));
+                return X509CertificateLoader.LoadPkcs12(cert.Export(X509ContentType.Pkcs12), null);
             }
         }
     }
