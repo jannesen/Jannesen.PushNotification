@@ -164,14 +164,18 @@ namespace Jannesen.PushNotification
                 }
 
                 if (!queued) {
-                    if (notification != null)
+                    if (notification != null) {
                         Service.SendNotification(notification);
+                    }
+
                     return ;
                 }
             }
             catch(Exception err) {
-                if (notification != null)
+                if (notification != null) {
                     await Service.Error(new PushNotificationException("PushMessage to '" + notification.DeviceToken + "' failed. Invalid notification format.", PushNotificationErrorReason.InvalidMessage, notification, err));
+                    return;
+                }
             }
 
             try {
