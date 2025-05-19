@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace Jannesen.PushNotification
 {
-    public abstract class WebService: IDisposable
+    public abstract class PushWebService: IDisposable
     {
-                                                                ~WebService()
+                                                                ~PushWebService()
         {
             Dispose(false);
         }

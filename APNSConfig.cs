@@ -13,25 +13,27 @@ using Jannesen.PushNotification.Library;
  *  - join BEGIN ENCRYPTED PRIVATE KEY lines with \n and place in key
  *  - join BEGIN CERTIFICATE lines with \n and place in cert
  */
+
+#pragma warning disable CA1822
+
 namespace Jannesen.PushNotification
 {
-    public sealed class APNSLegacyConfig: IDisposable
+    public sealed class APNSConfig: IDisposable
     {
-        public                      bool                                Development                 { get; private set; }
+        public                      string                              APNSServer                  => "https://api.push.apple.com";
         public                      X509Certificate2                    ClientCertificate           { get; private set; }
-        public                      int                                 FeedbackInterval            { get; private set; }
-        public                      int                                 RecyleCount                 { get; private set; }
-        public                      int                                 RecyleTimout                { get; private set; }
+        public                      string                              BundleId                    { get; private set; }
 
-        public                                                          APNSLegacyConfig(JsonObject config, string? passphrase=null)
+        public                                                          APNSConfig(JsonObject config, string? passphrase=null)
         {
             ArgumentNullException.ThrowIfNull(config);
 
             try {
-                Development       = config.GetValueBoolean("development", false);
                 ClientCertificate =  _loadCertificate(config.GetValueObjectRequired("client-certificate"), passphrase);
-                RecyleCount       = config.GetValueInt("recyle-count",      1, 1024, 128);
-                RecyleTimout      = config.GetValueInt("recyle-timout",     1,   30,   5) * 1000;
+                var ceritficateSubjectName = ClientCertificate.SubjectName.Name;
+                var i = ceritficateSubjectName.IndexOf("0.9.2342.19200300.100.1.1=");
+                if (i <= 0) throw new PushNotificationConfigException("Can't get bundle of certificate");
+                BundleId = ceritficateSubjectName.Substring(i + 26);
             }
             catch(Exception err) {
                 ClientCertificate?.Dispose();
@@ -45,7 +47,7 @@ namespace Jannesen.PushNotification
 
         public      override        string                              ToString()
         {
-            return "PushNotifcation.Apple";
+            return "PushNotifcation.APNSConfig";
         }
 
         private     static          X509Certificate2                    _loadCertificate(JsonObject clientCertificate, string? passphrase)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,7 +11,7 @@ using Jannesen.PushNotification.Library;
 
 namespace Jannesen.PushNotification
 {
-    public sealed class FCMV1WebService: WebService
+    public sealed class FCMV1WebService: PushWebService
     {
         private struct JWTPayload: IJsonSerializer
         {
@@ -57,12 +58,14 @@ namespace Jannesen.PushNotification
             Config             = config;
             _jwtEncoder        = new JWTEncoder(config.PrivateKeyId, config.PrivateKey);
             _httpClientHandler = new HttpClientHandler() {
-                                     MaxConnectionsPerServer        = 8,
                                      AutomaticDecompression         = DecompressionMethods.GZip,
                                      CheckCertificateRevocationList = true,
                                      AllowAutoRedirect              = false
                                  };
-            _httpClient          = new HttpClient(_httpClientHandler);
+            _httpClient          = new HttpClient(_httpClientHandler) {
+                                       Timeout = new TimeSpan(15 * TimeSpan.TicksPerSecond)
+                                   };
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
             _lockObject = new object();
         }
@@ -82,9 +85,6 @@ namespace Jannesen.PushNotification
         {
             var retry = 0;
 retry:
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " begin");
-#endif
             var spm = _formatMessage(notification);
             var at  = (await GetAuthorizationTokenAsync(ct)).Token;
 
@@ -103,16 +103,10 @@ retry:
                             if (JsonReader.ParseString(sjson) is JsonObject jsonObject) {
                                 switch(httpResponse.StatusCode) {
                                 case HttpStatusCode.OK:
-#if DEBUG
-                                    System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " succcess");
-#endif
                                     return;
 
                                 case HttpStatusCode.NotFound:
                                     if (jsonObject.GetValueObject("error")?.GetValueString("code") == "404") {
-#if DEBUG
-                                        System.Diagnostics.Debug.WriteLine("SendPushNotificationAsync: token=" + notification.DeviceToken + " not found");
-#endif
                                         throw new PushNotificationException("Unknown device.", PushNotificationErrorReason.DeviceNotFound, notification);
                                     }
                                     break;
@@ -126,9 +120,9 @@ retry:
                         }
                     }
 
-                    if (httpResponse.StatusCode == HttpStatusCode.BadGateway         ||
-                        httpResponse.StatusCode == HttpStatusCode.ServiceUnavailable ||
-                        httpResponse.StatusCode == HttpStatusCode.InternalServerError) {
+                    if (httpResponse.StatusCode == HttpStatusCode.InternalServerError ||
+                        httpResponse.StatusCode == HttpStatusCode.BadGateway          ||
+                        httpResponse.StatusCode == HttpStatusCode.ServiceUnavailable) {
                         if (retry < 3) {
                             try {
                                 await Task.Delay(5000 + (++retry * 2500), ct);
@@ -165,9 +159,6 @@ retry:
 
             var retry = 0;
 retry:
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: begin");
-#endif
             var dt = (int)((DateTime.UtcNow - StaticLib.UnixEPoch).Ticks / TimeSpan.TicksPerSecond);
             var assertion = _jwtEncoder.CreateJwtToken(new JWTPayload() {
                                                            scopes           = JWTScopes,
@@ -193,9 +184,6 @@ retry:
                                 var token_type = jsonObject.GetValueString("token_type");
 
                                 if (token_type == "Bearer") {
-#if DEBUG
-                                    System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: autorized");
-#endif
                                     return new AutorizationToken(token_type + " " + jsonObject.GetValueString("access_token"),
                                                                     StaticLib.UnixEPoch.AddTicks((dt + jsonObject.GetValueInt("expires_in")) * TimeSpan.TicksPerSecond));
                                 }
@@ -205,9 +193,6 @@ retry:
                         }
                     }
 
-#if DEBUG
-                    System.Diagnostics.Debug.WriteLine("_getAuthorizationTokenAsync: failed");
-#endif
                     if (httpResponse.StatusCode == HttpStatusCode.BadGateway ||
                         httpResponse.StatusCode == HttpStatusCode.ServiceUnavailable) {
                         if (retry < 3) {
@@ -321,6 +306,11 @@ retry:
             }
 
             return rtn + " body='" + sjson + "'";
+        }
+
+        public      override        string                      ToString()
+        {
+            return "PushNotifcation.FCMV1WebService";
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Jannesen.PushNotification
 
         public      override    string                              ToString()
         {
-            return "PushNotifcation.Android";
+            return "PushNotifcationConfig.FCMConfig";
         }
 
         private     static      RSA                                 _loadPrivateKey(string key, string? passphrase)
