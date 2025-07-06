@@ -4,13 +4,13 @@ using Jannesen.FileFormat.Json;
 
 /*
  * Create config:
- * 
+ *
  * get project_id, private_key_id, client_email and token_uri from firebase config file.
- * 
+ *
  * get private_key from firebase config file split \n to lines and save file to 1.pem
  * openssl rsa -aes256 -in 1.pem -out 2.pem -passout pass:<passpharse>
  * open 2.pem in editor and join lines with \n to 1 line and add to config.
- * 
+ *
  */
 
 namespace Jannesen.PushNotification

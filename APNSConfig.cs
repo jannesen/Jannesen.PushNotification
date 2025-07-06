@@ -5,9 +5,9 @@ using Jannesen.PushNotification.Library;
 
 /*
  * Convert apple client pkcs to key cert
- * 
+ *
  * openssl pkcs12 -passin pass:<pkcs passphare> -passout pass:<passphare>  -in <pfxfile> -out 1.pem
- * 
+ *
  * open pem file in editor.
  *  - remove all lines outside -----BEGIN en ---END
  *  - join BEGIN ENCRYPTED PRIVATE KEY lines with \n and place in key
