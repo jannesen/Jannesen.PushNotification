@@ -14,7 +14,6 @@
         <SignAssembly>True</SignAssembly>
         <AssemblyOriginatorKeyFile>Jannesen.PushNotification.snk</AssemblyOriginatorKeyFile>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <AutoGenerateBindingRedirects>False</AutoGenerateBindingRedirects>
 
         <Company>Jannesen B.V.</Company>
         <Version>1.10.00.001</Version>
